@@ -103,21 +103,33 @@ const HeroSection = () => {
               </div>
             </div>
 
-            {/* Bottom avatars bar */}
+            {/* Bottom team form cards */}
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { name: "Robert T.", online: true, img: "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?q=80&w=640&auto=format&fit=crop" },
-                { name: "Bessie S.", online: true, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=640&auto=format&fit=crop" },
-                { name: "Devon O.", online: false, img: "https://images.unsplash.com/photo-1547638378-8b54d08c7a7b?q=80&w=640&auto=format&fit=crop" },
-                { name: "Annette I.", online: true, img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=640&auto=format&fit=crop" }
-              ].map((user, i) => (
+                { name: "Manchester City", logo: "🔵", form: ["W", "W", "W", "D", "W"], points: 28 },
+                { name: "Arsenal", logo: "🔴", form: ["W", "W", "L", "W", "W"], points: 26 },
+                { name: "Liverpool", logo: "🔴", form: ["W", "D", "W", "W", "L"], points: 25 },
+                { name: "Aston Villa", logo: "🟣", form: ["L", "W", "W", "D", "W"], points: 24 }
+              ].map((team, i) => (
                 <div key={i} className="rounded-2xl bg-card ring-1 ring-border px-3 py-3 flex items-center gap-3">
-                  <img src={user.img} alt="avatar" className="h-10 w-10 rounded-full ring-1 ring-border object-cover" />
-                  <div>
-                    <div className="text-sm text-foreground tracking-tight font-semibold">{user.name}</div>
-                    <div className={`text-xs ${user.online ? 'text-primary' : 'text-muted-foreground'} inline-flex items-center gap-1`}>
-                      {user.online && <span className="h-1.5 w-1.5 rounded-full bg-primary"></span>}
-                      {user.online ? 'Online' : 'Otthon'}
+                  <div className="h-10 w-10 rounded-full ring-1 ring-border bg-background flex items-center justify-center text-2xl">
+                    {team.logo}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm text-foreground tracking-tight font-semibold">{team.name}</div>
+                    <div className="flex items-center gap-1 mt-1">
+                      {team.form.map((result, idx) => (
+                        <span 
+                          key={idx} 
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            result === "W" ? "bg-primary" : 
+                            result === "D" ? "bg-secondary" : 
+                            "bg-destructive"
+                          }`}
+                          title={result === "W" ? "Győzelem" : result === "D" ? "Döntetlen" : "Vereség"}
+                        />
+                      ))}
+                      <span className="text-xs text-muted-foreground ml-1">{team.points} pont</span>
                     </div>
                   </div>
                 </div>
