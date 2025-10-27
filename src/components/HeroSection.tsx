@@ -2,6 +2,10 @@ import { ChevronRight, Radar, Wifi, Sparkles, Activity, ShieldCheck } from "luci
 import { Button } from "@/components/ui/button";
 import ControlPanel from "./ControlPanel";
 import stadiumImage from "@/assets/stadium-champions-league.jpg";
+import manCityLogo from "@/assets/team-logo-mancity.png";
+import arsenalLogo from "@/assets/team-logo-arsenal.png";
+import liverpoolLogo from "@/assets/team-logo-liverpool.png";
+import villaLogo from "@/assets/team-logo-villa.png";
 
 const HeroSection = () => {
   return (
@@ -106,15 +110,17 @@ const HeroSection = () => {
             {/* Bottom team form cards */}
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { name: "Manchester City", logo: "🔵", form: ["W", "W", "W", "D", "W"], points: 28 },
-                { name: "Arsenal", logo: "🔴", form: ["W", "W", "L", "W", "W"], points: 26 },
-                { name: "Liverpool", logo: "🔴", form: ["W", "D", "W", "W", "L"], points: 25 },
-                { name: "Aston Villa", logo: "🟣", form: ["L", "W", "W", "D", "W"], points: 24 }
+                { name: "Manchester City", logo: manCityLogo, form: ["W", "W", "W", "D", "W"], points: 28 },
+                { name: "Arsenal", logo: arsenalLogo, form: ["W", "W", "L", "W", "W"], points: 26 },
+                { name: "Liverpool", logo: liverpoolLogo, form: ["W", "D", "W", "W", "L"], points: 25 },
+                { name: "Aston Villa", logo: villaLogo, form: ["L", "W", "W", "D", "W"], points: 24 }
               ].map((team, i) => (
                 <div key={i} className="rounded-2xl bg-card ring-1 ring-border px-3 py-3 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full ring-1 ring-border bg-background flex items-center justify-center text-2xl">
-                    {team.logo}
-                  </div>
+                  <img 
+                    src={team.logo} 
+                    alt={`${team.name} logo`} 
+                    className="h-10 w-10 rounded-full ring-1 ring-border object-cover bg-background p-1"
+                  />
                   <div className="flex-1">
                     <div className="text-sm text-foreground tracking-tight font-semibold">{team.name}</div>
                     <div className="flex items-center gap-1 mt-1">
