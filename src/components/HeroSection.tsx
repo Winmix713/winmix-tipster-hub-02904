@@ -1,6 +1,7 @@
 import { ChevronRight, Radar, Wifi, Sparkles, Activity, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ControlPanel from "./ControlPanel";
+import stadiumImage from "@/assets/stadium-champions-league.jpg";
 
 const HeroSection = () => {
   return (
@@ -25,8 +26,8 @@ const HeroSection = () => {
           <div className="lg:col-span-2 relative">
             <div className="relative overflow-hidden rounded-3xl ring-1 ring-border bg-card">
               <img 
-                src="https://images.unsplash.com/photo-1613977257593-3bbbf9c3d591?q=80&w=1770&auto=format&fit=crop" 
-                alt="3D stadion render" 
+                src={stadiumImage} 
+                alt="UEFA Champions League stadium with dramatic lighting and crowd" 
                 className="w-full h-[440px] sm:h-[520px] object-cover opacity-[0.92]" 
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-background/50 via-background/10 to-transparent"></div>
