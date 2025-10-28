@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import { Users } from "lucide-react";
@@ -61,9 +62,10 @@ const Teams = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {teams.map((team, index) => (
-              <div
+              <Link
                 key={index}
-                className="rounded-2xl bg-card ring-1 ring-border p-5 hover:ring-primary/30 hover:bg-card/80 transition"
+                to={`/teams/${encodeURIComponent(team)}`}
+                className="rounded-2xl bg-card ring-1 ring-border p-5 hover:ring-primary/30 hover:bg-card/80 transition cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-full bg-muted ring-1 ring-border grid place-items-center">
@@ -76,7 +78,7 @@ const Teams = () => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
