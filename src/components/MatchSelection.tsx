@@ -4,17 +4,33 @@ import { Button } from "@/components/ui/button";
 import MatchCard from "./MatchCard";
 import PredictionResults from "./PredictionResults";
 
-const teams = [
-  "Arsenal", "Chelsea", "Liverpool", "Manchester City", "Manchester United",
-  "Tottenham", "Newcastle", "Aston Villa", "Brighton", "West Ham",
-  "Everton", "Fulham", "Crystal Palace", "Brentford", "Nottingham Forest"
-];
+const leagueTeams = {
+  angol: [
+    "Aston Oroszlán", "Brentford", "Brighton", "Chelsea", "Crystal Palace",
+    "Everton", "Fulham", "Liverpool", "London Ágyúk", "Manchester Kék",
+    "Newcastle", "Nottingham", "Tottenham", "Vörös Ördögök", "West Ham", "Wolverhampton"
+  ],
+  spanyol: [
+    "Alaves", "Barcelona", "Bilbao", "Getafe", "Girona", "Las Palmas",
+    "Madrid Fehér", "Madrid Piros", "Mallorca", "Osasuna", "San Sebastian",
+    "Sevilla Piros", "Sevilla Zöld", "Valencia", "Vigo", "Villarreal"
+  ]
+};
 
 const MatchSelection = () => {
+  const [league, setLeague] = useState<"angol" | "spanyol">("angol");
   const [matches, setMatches] = useState(
     Array(8).fill(null).map(() => ({ home: "", away: "" }))
   );
   const [showPredictions, setShowPredictions] = useState(false);
+
+  const teams = leagueTeams[league];
+
+  const handleLeagueChange = (newLeague: "angol" | "spanyol") => {
+    setLeague(newLeague);
+    setMatches(Array(8).fill(null).map(() => ({ home: "", away: "" })));
+    setShowPredictions(false);
+  };
 
   const handleMatchChange = (index: number, team: string, side: "home" | "away") => {
     const newMatches = [...matches];
@@ -50,6 +66,30 @@ const MatchSelection = () => {
             </div>
             <h2 className="text-2xl sm:text-3xl tracking-tight text-foreground font-semibold">Válaszd ki a csapatokat</h2>
             <p className="text-muted-foreground mt-1">Válassz Otthon/Vendég csapatot. A már kiválasztott csapatok nem jelennek meg újra.</p>
+            
+            {/* League Selector */}
+            <div className="mt-4 inline-flex items-center rounded-lg bg-muted p-1 ring-1 ring-border">
+              <button
+                onClick={() => handleLeagueChange("angol")}
+                className={`px-4 py-2 rounded-md text-sm font-semibold transition ${
+                  league === "angol"
+                    ? "bg-card text-foreground ring-1 ring-border shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Angol Bajnokság
+              </button>
+              <button
+                onClick={() => handleLeagueChange("spanyol")}
+                className={`px-4 py-2 rounded-md text-sm font-semibold transition ${
+                  league === "spanyol"
+                    ? "bg-card text-foreground ring-1 ring-border shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Spanyol Bajnokság
+              </button>
+            </div>
           </div>
           <div className="hidden sm:flex items-center gap-2">
             <div className="h-2 w-40 rounded-full bg-muted overflow-hidden ring-1 ring-border">
