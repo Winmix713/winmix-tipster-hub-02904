@@ -1,8 +1,16 @@
 import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
-import { ArrowLeft, TrendingUp, Users } from "lucide-react";
+import { ArrowLeft, TrendingUp, Users, Target, Shield, Activity, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import StatCard from "@/components/StatCard";
+import { getMatchHistory } from "@/data/matchHistory";
+import { 
+  generateTeamStatistics, 
+  calculateHeadToHeadStats, 
+  predictWinner,
+  calculatePoissonGoals 
+} from "@/lib/teamStatistics";
 
 const teamStats: Record<string, any> = {
   // Angol csapatok
@@ -295,6 +303,13 @@ const TeamDetail = () => {
   const { teamName } = useParams<{ teamName: string }>();
   const navigate = useNavigate();
   const team = getTeamStats(teamName || "");
+  
+  // Get match history and calculate statistics
+  const matches = getMatchHistory(teamName || "", team.stats.overall.value);
+  const statistics = generateTeamStatistics(matches);
+  const headToHead = calculateHeadToHeadStats(matches);
+  const prediction = predictWinner(matches);
+  const poissonGoals = calculatePoissonGoals(matches);
 
   return (
     <div className="min-h-screen">
@@ -374,6 +389,64 @@ const TeamDetail = () => {
 
             {/* Detailed Stats */}
             <div className="lg:col-span-2 space-y-6">
+              {/* Basic Match Statistics */}
+              <StatCard
+                title="Alapvető Mérkőzésstatisztikák"
+                icon={<Activity className="w-5 h-5 text-primary" />}
+                stats={[
+                  { label: "Mindkét csapat góllövése", value: statistics.bothTeamsScored, type: "percentage" },
+                  { label: "Átlagos gólok mérkőzésenként", value: statistics.avgGoalsPerMatch, type: "number" },
+                  { label: "Átlagos hazai gólok", value: statistics.avgHomeGoals, type: "number" },
+                  { label: "Átlagos vendég gólok", value: statistics.avgAwayGoals, type: "number" },
+                ]}
+              />
+
+              {/* Team-Specific Statistics */}
+              <StatCard
+                title="Csapatspecifikus Statisztikák"
+                icon={<Target className="w-5 h-5 text-primary" />}
+                stats={[
+                  { label: "Formindex (utolsó 5 mérkőzés)", value: statistics.formIndex, type: "percentage" },
+                  { label: "Várható gólok (xG)", value: statistics.expectedGoals, type: "number" },
+                  { label: "Mindkét csapat góllövésének valószínűsége", value: statistics.bothTeamsToScoreProb, type: "percentage" },
+                ]}
+              />
+
+              {/* Head-to-Head Statistics */}
+              <StatCard
+                title="Mérkőzések Eredményei"
+                icon={<Shield className="w-5 h-5 text-primary" />}
+                stats={[
+                  { label: "Győzelmek aránya", value: headToHead.wins, type: "percentage" },
+                  { label: "Döntetlenek aránya", value: headToHead.draws, type: "percentage" },
+                  { label: "Vereségek aránya", value: headToHead.losses, type: "percentage" },
+                ]}
+              />
+
+              {/* Prediction Statistics */}
+              <StatCard
+                title="Előrejelzési Képesség"
+                icon={<TrendingDown className="w-5 h-5 text-primary" />}
+                stats={[
+                  { label: "Következő mérkőzés előrejelzés", value: prediction.prediction, type: "text" },
+                  { label: "Bizonytalansági szint", value: `${prediction.confidence}%`, type: "text" },
+                  { label: "Várható hazai gólok (Poisson)", value: poissonGoals.home, type: "number" },
+                  { label: "Várható vendég gólok (Poisson)", value: poissonGoals.away, type: "number" },
+                ]}
+              />
+
+              {/* Win Probability (Elo Model) */}
+              <StatCard
+                title="Győzelmi Valószínűségek (Elo-modell)"
+                icon={<TrendingUp className="w-5 h-5 text-primary" />}
+                stats={[
+                  { label: "Hazai győzelem valószínűsége", value: statistics.winProbability.home, type: "percentage" },
+                  { label: "Döntetlen valószínűsége", value: statistics.winProbability.draw, type: "percentage" },
+                  { label: "Vendég győzelem valószínűsége", value: statistics.winProbability.away, type: "percentage" },
+                ]}
+              />
+
+              {/* Original Detailed Stats */}
               {Object.entries(team.detailedStats).map(([category, stats]: [string, any]) => (
                 <div key={category} className="rounded-2xl bg-card ring-1 ring-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">{category}</h3>
