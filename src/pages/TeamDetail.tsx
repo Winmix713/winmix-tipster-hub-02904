@@ -4,6 +4,8 @@ import TopBar from "@/components/TopBar";
 import { ArrowLeft, TrendingUp, Users, Target, Shield, Activity, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
+import { CSSBadge } from "@/components/CSSBadge";
+import { NarrativeSection } from "@/components/NarrativeSection";
 import { getMatchHistory } from "@/data/matchHistory";
 import { 
   generateTeamStatistics, 
@@ -476,6 +478,44 @@ const TeamDetail = () => {
                   </div>
                 </div>
               ))}
+
+              {/* CSS Badge - Kognitív Stabilitás Score */}
+              <div className="rounded-2xl bg-card ring-1 ring-border p-6">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Kognitív Stabilitás Score (CSS)</h3>
+                <div className="flex justify-center">
+                  <CSSBadge
+                    score={8.7}
+                    dataQuality={9.0}
+                    confidence={8.5}
+                    context={8.0}
+                    badge="Magas"
+                    trend="up"
+                  />
+                </div>
+              </div>
+
+              {/* Narrative Section - Szakértői Elemzés */}
+              <NarrativeSection
+                narrative={`A(z) ${teamName} kiváló formában van, várható gólok száma: ${statistics.expectedGoals.toFixed(1)} mérkőzésenként. A csapat formindexe ${statistics.formIndex.toFixed(0)}%, ami erős teljesítményre utal. ${prediction.prediction === "Hazai győzelem" ? "Hazai pályán erős esélyekkel rendelkezik" : prediction.prediction === "Vendég győzelem" ? "Vendégként is megbízható" : "Kiegyensúlyozott teljesítményre számíthatunk"}. Az előrejelzés megbízhatósága Magas (CSS: 8.7/10), ami azt jelenti, hogy az adatminőség és a modell bizonyossága egyaránt kiemelkedő.`}
+                supportingFactors={[
+                  `Form index: ${statistics.formIndex.toFixed(0)}% (${statistics.formIndex >= 70 ? "kiváló forma" : "közepes forma"})`,
+                  `Várható gólok: ${statistics.expectedGoals.toFixed(1)} mérkőzésenként`,
+                  `${headToHead.wins.toFixed(0)}% győzelmi arány az utolsó mérkőzéseken`,
+                  `Mindkét csapat góllövése: ${statistics.bothTeamsScored.toFixed(0)}% valószínűség`,
+                  `${prediction.prediction} várható (${prediction.confidence}% bizonyossággal)`
+                ]}
+                riskFactors={[
+                  "Előző mérkőzés fáradtság hatása",
+                  `Vendég teljesítmény variabilitás (${headToHead.losses.toFixed(0)}% vereség arány)`,
+                  "Várható gól eltérések a különböző környezetekben"
+                ]}
+                bettingSuggestions={{
+                  high: prediction.prediction,
+                  medium: `Over ${statistics.avgGoalsPerMatch.toFixed(1)} gól`,
+                  low: "Pontos eredmény (kockázatos)"
+                }}
+                cssScore={8.7}
+              />
             </div>
           </div>
         </div>
