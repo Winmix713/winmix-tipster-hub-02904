@@ -1,1 +1,10 @@
 project_id = "ujndzdjrmqbtcqpmhepe"
+
+[functions.analyze-match]
+verify_jwt = false
+
+[functions.submit-feedback]
+verify_jwt = false
+
+[functions.get-predictions]
+verify_jwt = false

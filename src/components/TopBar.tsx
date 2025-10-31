@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { Menu, Activity, Target, Clock } from "lucide-react";
+import { Menu, Activity, Target, Clock, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const TopBar = () => {
+  const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -40,9 +42,11 @@ const TopBar = () => {
           <div className="border-t border-border backdrop-blur bg-background/50">
             <div className="px-4 py-3 grid grid-cols-2 gap-3">
               <a href="#hero" className="h-10 rounded-lg bg-card ring-1 ring-border hover:bg-muted text-sm grid place-items-center">Kezdőlap</a>
+              <button onClick={() => navigate('/dashboard')} className="h-10 rounded-lg bg-primary text-primary-foreground text-sm grid place-items-center font-semibold">
+                WinMix Prototípus
+              </button>
               <a href="#match-selection" className="h-10 rounded-lg bg-card ring-1 ring-border hover:bg-muted text-sm grid place-items-center">Mérkőzések</a>
               <a href="#call-to-action" className="h-10 rounded-lg bg-card ring-1 ring-border hover:bg-muted text-sm grid place-items-center">Elemzés</a>
-              <a href="#leaderboard" className="h-10 rounded-lg bg-card ring-1 ring-border hover:bg-muted text-sm grid place-items-center">Ranglista</a>
             </div>
           </div>
         )}
@@ -54,6 +58,13 @@ const TopBar = () => {
           <div className="rounded-lg bg-card ring-1 ring-border px-3 py-1.5">
             <div className="text-muted-foreground text-sm tracking-tight font-medium">Smart Betting • {currentDate}</div>
           </div>
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="rounded-lg bg-primary text-primary-foreground px-4 py-2 font-semibold text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
+          >
+            <Zap className="w-4 h-4" />
+            WinMix Prototípus
+          </button>
         </div>
         <div className="flex items-center gap-3">
           <div className="rounded-xl bg-card ring-1 ring-border px-3 py-2 flex items-center gap-3">

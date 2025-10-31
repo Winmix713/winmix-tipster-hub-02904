@@ -8,6 +8,8 @@ import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
 import Matches from "./pages/Matches";
 import Leagues from "./pages/Leagues";
+import Dashboard from "./pages/Dashboard";
+import MatchDetail from "./pages/MatchDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +22,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/match/:id" element={<MatchDetail />} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/teams/:teamName" element={<TeamDetail />} />
           <Route path="/matches" element={<Matches />} />
