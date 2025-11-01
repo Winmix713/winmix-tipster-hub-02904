@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchCard from "./MatchCard";
 import PredictionResults from "./PredictionResults";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const leagueTeams = {
   angol: [
@@ -23,6 +25,8 @@ const MatchSelection = () => {
     Array(8).fill(null).map(() => ({ home: "", away: "" }))
   );
   const [showPredictions, setShowPredictions] = useState(false);
+  const [predictions, setPredictions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const teams = leagueTeams[league];
 
@@ -30,6 +34,7 @@ const MatchSelection = () => {
     setLeague(newLeague);
     setMatches(Array(8).fill(null).map(() => ({ home: "", away: "" })));
     setShowPredictions(false);
+    setPredictions([]);
   };
 
   const handleMatchChange = (index: number, team: string, side: "home" | "away") => {
@@ -37,6 +42,77 @@ const MatchSelection = () => {
     newMatches[index] = { ...newMatches[index], [side]: team };
     setMatches(newMatches);
     setShowPredictions(false);
+    setPredictions([]);
+  };
+
+  const runPredictions = async () => {
+    setIsLoading(true);
+    setPredictions([]);
+    
+    try {
+      const leagueId = league === "angol" ? "9edec104-e7aa-48d9-b8c0-24ccce0d1f8f" : "8bbb4002-7b94-4546-9295-40154c9ed76a";
+      
+      // Get team IDs
+      const { data: allTeams } = await supabase
+        .from("teams")
+        .select("id, name")
+        .eq("league_id", leagueId);
+      
+      if (!allTeams) throw new Error("Failed to fetch teams");
+      
+      const teamMap = new Map(allTeams.map(t => [t.name, t.id]));
+      
+      // Insert matches and run predictions
+      const predictionPromises = completeMatches.map(async (match) => {
+        const homeTeamId = teamMap.get(match.home);
+        const awayTeamId = teamMap.get(match.away);
+        
+        if (!homeTeamId || !awayTeamId) return null;
+        
+        // Insert match
+        const { data: insertedMatch } = await supabase
+          .from("matches")
+          .insert({
+            league_id: leagueId,
+            home_team_id: homeTeamId,
+            away_team_id: awayTeamId,
+            match_date: new Date().toISOString(),
+            status: "scheduled"
+          })
+          .select()
+          .single();
+        
+        if (!insertedMatch) return null;
+        
+        // Run prediction
+        const { data: predictionData, error } = await supabase.functions.invoke("analyze-match", {
+          body: { matchId: insertedMatch.id }
+        });
+        
+        if (error) {
+          console.error("Prediction error:", error);
+          return null;
+        }
+        
+        return {
+          match,
+          matchId: insertedMatch.id,
+          ...predictionData
+        };
+      });
+      
+      const results = await Promise.all(predictionPromises);
+      const validResults = results.filter(r => r !== null);
+      
+      setPredictions(validResults);
+      setShowPredictions(true);
+      toast.success(`${validResults.length} predikció elkészült!`);
+    } catch (error) {
+      console.error("Error running predictions:", error);
+      toast.error("Hiba történt a predikciók futtatása során");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getAvailableTeams = (currentMatch: number, side: "home" | "away") => {
@@ -126,21 +202,30 @@ const MatchSelection = () => {
               <span className="text-xs text-muted-foreground">{completeMatches.length} / 8</span>
             </div>
             <Button
-              disabled={!canPredict}
-              onClick={() => setShowPredictions(true)}
+              disabled={!canPredict || isLoading}
+              onClick={runPredictions}
               className="group relative overflow-hidden inline-flex items-center gap-2 h-10 px-4 rounded-md bg-gradient-to-r from-primary to-primary text-primary-foreground ring-1 ring-primary hover:ring-primary/80 transition text-sm font-semibold disabled:opacity-50"
             >
               <span className="relative z-10 inline-flex items-center gap-2">
-                Predikciók futtatása
-                <ArrowRight className="w-4 h-4" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Predikciók futtatása...
+                  </>
+                ) : (
+                  <>
+                    Predikciók futtatása
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </span>
               <span className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 bg-gradient-to-r from-white/0 via-white/40 to-white/0"></span>
             </Button>
           </div>
         </div>
 
-        {showPredictions && canPredict && (
-          <PredictionResults matches={completeMatches} />
+        {showPredictions && predictions.length > 0 && (
+          <PredictionResults predictions={predictions} />
         )}
       </div>
     </section>
