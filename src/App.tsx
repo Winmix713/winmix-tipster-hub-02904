@@ -11,10 +11,13 @@ import Matches from "./pages/Matches";
 import Leagues from "./pages/Leagues";
 import Dashboard from "./pages/Dashboard";
 import MatchDetail from "./pages/MatchDetail";
+import PredictionsView from "./pages/PredictionsView";
 import ScheduledJobs from "./pages/ScheduledJobs";
 import PredictionsView from "./pages/PredictionsView";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
+import PredictionsView from "./pages/PredictionsView";
+import CrossLeague from "./pages/CrossLeague";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +39,7 @@ const App = () => (
           <Route path="/matches" element={<Matches />} />
           <Route path="/leagues" element={<Leagues />} />
           <Route path="/jobs" element={<ScheduledJobs />} />
+          <Route path="/cross-league" element={<CrossLeague />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
