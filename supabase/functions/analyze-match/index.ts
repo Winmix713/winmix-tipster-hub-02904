@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,12 +19,12 @@ interface MatchResult {
 interface Pattern {
   template_name: string;
   confidence_boost: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 // Helper: Get recent matches for a team
 async function getRecentMatches(
-  supabase: any,
+  supabase: SupabaseClient,
   teamId: string,
   limit: number
 ): Promise<MatchResult[]> {
@@ -45,7 +46,7 @@ async function getRecentMatches(
 
 // Helper: Get H2H matches between two teams
 async function getH2HMatches(
-  supabase: any,
+  supabase: SupabaseClient,
   team1Id: string,
   team2Id: string,
   limit: number
@@ -217,6 +218,13 @@ serve(async (req) => {
         match_id: matchId,
         predicted_outcome: predictedOutcome,
         confidence_score: confidence,
+        css_score: confidence,
+        prediction_factors: {
+          patterns: detectedPatterns,
+          form_scores: { home: homeFormScore, away: awayFormScore },
+          h2h_matches_considered: h2hMatches.length,
+          league_avg_goals: match.league.avg_goals_per_match,
+        },
         btts_prediction: match.league.avg_goals_per_match > 2.5
       })
       .select()

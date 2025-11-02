@@ -223,6 +223,9 @@ export type Database = {
           actual_outcome: string | null
           btts_prediction: boolean | null
           confidence_score: number
+          css_score: number | null
+          prediction_factors: Json | null
+          calibration_error: number | null
           created_at: string | null
           evaluated_at: string | null
           id: string
@@ -237,6 +240,9 @@ export type Database = {
           actual_outcome?: string | null
           btts_prediction?: boolean | null
           confidence_score: number
+          css_score?: number | null
+          prediction_factors?: Json | null
+          calibration_error?: number | null
           created_at?: string | null
           evaluated_at?: string | null
           id?: string
@@ -251,6 +257,9 @@ export type Database = {
           actual_outcome?: string | null
           btts_prediction?: boolean | null
           confidence_score?: number
+          css_score?: number | null
+          prediction_factors?: Json | null
+          calibration_error?: number | null
           created_at?: string | null
           evaluated_at?: string | null
           id?: string
@@ -270,6 +279,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      model_performance: {
+        Row: {
+          id: string
+          model_version: string
+          period_start: string
+          period_end: string
+          total_predictions: number
+          accuracy_overall: number | null
+          accuracy_winner: number | null
+          accuracy_btts: number | null
+          confidence_calibration_score: number | null
+          league_breakdown: Json | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          model_version: string
+          period_start: string
+          period_end: string
+          total_predictions?: number
+          accuracy_overall?: number | null
+          accuracy_winner?: number | null
+          accuracy_btts?: number | null
+          confidence_calibration_score?: number | null
+          league_breakdown?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          model_version?: string
+          period_start?: string
+          period_end?: string
+          total_predictions?: number
+          accuracy_overall?: number | null
+          accuracy_winner?: number | null
+          accuracy_btts?: number | null
+          confidence_calibration_score?: number | null
+          league_breakdown?: Json | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      model_comparison: {
+        Row: {
+          id: string
+          model_a_id: string
+          model_b_id: string
+          comparison_date: string | null
+          accuracy_diff: number | null
+          p_value: number | null
+          winning_model: string | null
+          sample_size: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          model_a_id: string
+          model_b_id: string
+          comparison_date?: string | null
+          accuracy_diff?: number | null
+          p_value?: number | null
+          winning_model?: string | null
+          sample_size?: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          model_a_id?: string
+          model_b_id?: string
+          comparison_date?: string | null
+          accuracy_diff?: number | null
+          p_value?: number | null
+          winning_model?: string | null
+          sample_size?: number
+          created_at?: string | null
+        }
+        Relationships: []
       }
       teams: {
         Row: {
