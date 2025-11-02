@@ -13,8 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import MatchDetail from "./pages/MatchDetail";
 import PredictionsView from "./pages/PredictionsView";
 import ScheduledJobs from "./pages/ScheduledJobs";
-import PredictionsView from "./pages/PredictionsView";
-import Monitoring from "./pages/Monitoring";
+import Phase9 from "./pages/Phase9";
 import NotFound from "./pages/NotFound";
 import PredictionsView from "./pages/PredictionsView";
 import CrossLeague from "./pages/CrossLeague";
@@ -39,7 +38,7 @@ const App = () => (
           <Route path="/matches" element={<Matches />} />
           <Route path="/leagues" element={<Leagues />} />
           <Route path="/jobs" element={<ScheduledJobs />} />
-          <Route path="/cross-league" element={<CrossLeague />} />
+          <Route path="/phase9" element={<Phase9 />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

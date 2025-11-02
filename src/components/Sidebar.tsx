@@ -1,4 +1,4 @@
-import { Home, Users, Calendar as CalendarIcon, Trophy, Settings, Sparkles, Clock, LayoutDashboard, ListChecks, LineChart } from "lucide-react";
+import { Home, Users, Calendar as CalendarIcon, Trophy, Settings, Sparkles, Clock, Brain, LayoutDashboard, ListChecks } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
@@ -154,7 +154,7 @@ const Sidebar = () => {
               )}
             </NavLink>
             <NavLink 
-              to="/cross-league" 
+              to="/phase9" 
               className={({ isActive }) => 
                 `h-11 w-11 grid place-items-center rounded-xl transition-all ${
                   isActive 
@@ -164,7 +164,7 @@ const Sidebar = () => {
               }
             >
               {({ isActive }) => (
-                <Globe className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                <Brain className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
               )}
             </NavLink>
           </div>
