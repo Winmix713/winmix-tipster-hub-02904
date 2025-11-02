@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { matchId, homeScore, awayScore } = await req.json();
+    const { matchId, homeScore, awayScore, halfTimeHomeScore, halfTimeAwayScore } = await req.json();
 
     if (!matchId || homeScore === undefined || awayScore === undefined) {
       return new Response(
@@ -22,16 +22,33 @@ serve(async (req) => {
       );
     }
 
+    // Validate halftime scores if provided
+    if (halfTimeHomeScore !== null && halfTimeHomeScore !== undefined && halfTimeHomeScore > homeScore) {
+      return new Response(
+        JSON.stringify({ error: 'Halftime home score cannot be greater than final home score' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (halfTimeAwayScore !== null && halfTimeAwayScore !== undefined && halfTimeAwayScore > awayScore) {
+      return new Response(
+        JSON.stringify({ error: 'Halftime away score cannot be greater than final away score' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 1. Update match with final score
+    // 1. Update match with final score and halftime scores
     const { error: matchUpdateError } = await supabase
       .from('matches')
       .update({ 
         home_score: homeScore, 
-        away_score: awayScore, 
+        away_score: awayScore,
+        halftime_home_score: halfTimeHomeScore,
+        halftime_away_score: halfTimeAwayScore,
         status: 'finished' 
       })
       .eq('id', matchId);
