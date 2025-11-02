@@ -13,6 +13,8 @@ import Dashboard from "./pages/Dashboard";
 import MatchDetail from "./pages/MatchDetail";
 import ScheduledJobs from "./pages/ScheduledJobs";
 import NotFound from "./pages/NotFound";
+import PredictionsView from "./pages/PredictionsView";
+import CrossLeague from "./pages/CrossLeague";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,7 @@ const App = () => (
           <Route path="/matches" element={<Matches />} />
           <Route path="/leagues" element={<Leagues />} />
           <Route path="/jobs" element={<ScheduledJobs />} />
+          <Route path="/cross-league" element={<CrossLeague />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
