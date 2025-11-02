@@ -1,8 +1,48 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
+import TeamStatisticsTable from "@/components/TeamStatisticsTable";
 import { Users } from "lucide-react";
+
+// Mock statistics data - később Supabase-ből jön
+const generateTeamStats = (teamNames: string[]) => {
+  return teamNames.map(name => {
+    const played = Math.floor(Math.random() * 10) + 20;
+    const won = Math.floor(Math.random() * played * 0.5);
+    const lost = Math.floor(Math.random() * (played - won) * 0.6);
+    const drawn = played - won - lost;
+    const goalsFor = Math.floor(Math.random() * 40) + 20;
+    const goalsAgainst = Math.floor(Math.random() * 40) + 15;
+    const points = won * 3 + drawn;
+    
+    // Generate recent form
+    const formResults = ['W', 'D', 'L'];
+    const form = Array.from({ length: 8 }, () => 
+      formResults[Math.floor(Math.random() * formResults.length)]
+    );
+    
+    // Calculate form score based on last 5 matches
+    const recentForm = form.slice(-5);
+    const formScore = Math.round(
+      (recentForm.filter(r => r === 'W').length * 100 + 
+       recentForm.filter(r => r === 'D').length * 50) / 5
+    );
+
+    return {
+      name,
+      played,
+      won,
+      drawn,
+      lost,
+      goalsFor,
+      goalsAgainst,
+      goalDifference: goalsFor - goalsAgainst,
+      points,
+      form,
+      formScore
+    };
+  });
+};
 
 const leagueTeams = {
   angol: [
@@ -19,7 +59,7 @@ const leagueTeams = {
 
 const Teams = () => {
   const [league, setLeague] = useState<"angol" | "spanyol">("angol");
-  const teams = leagueTeams[league];
+  const teamStats = generateTeamStats(leagueTeams[league]);
 
   return (
     <div className="min-h-screen">
@@ -60,27 +100,10 @@ const Teams = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {teams.map((team, index) => (
-              <Link
-                key={index}
-                to={`/teams/${encodeURIComponent(team)}`}
-                className="rounded-2xl bg-card ring-1 ring-border p-5 hover:ring-primary/30 hover:bg-card/80 transition cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-muted ring-1 ring-border grid place-items-center">
-                    <span className="text-lg font-bold text-primary">{team.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-foreground">{team}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {league === "angol" ? "Angol Bajnokság" : "Spanyol Bajnokság"}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <TeamStatisticsTable 
+            teams={teamStats}
+            leagueName={league === "angol" ? "Angol Bajnokság" : "Spanyol Bajnokság"}
+          />
         </div>
       </main>
     </div>
