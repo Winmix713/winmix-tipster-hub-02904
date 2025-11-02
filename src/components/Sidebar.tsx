@@ -28,6 +28,20 @@ const Sidebar = () => {
               )}
             </NavLink>
             <NavLink 
+              to="/dashboard" 
+              className={({ isActive }) => 
+                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
+                  isActive 
+                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
+                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <LayoutDashboard className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              )}
+            </NavLink>
+            <NavLink 
               to="/predictions/new" 
               className={({ isActive }) => 
                 `h-11 w-11 grid place-items-center rounded-xl transition-all ${
@@ -39,6 +53,20 @@ const Sidebar = () => {
             >
               {({ isActive }) => (
                 <Sparkles className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              )}
+            </NavLink>
+            <NavLink 
+              to="/predictions" 
+              className={({ isActive }) => 
+                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
+                  isActive 
+                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
+                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <ListChecks className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
               )}
             </NavLink>
             <NavLink 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import { Calendar } from "lucide-react";
+import type { LeagueKey } from "@/data/teamOptions";
 
 const leagueMatches = {
   angol: [
@@ -23,7 +24,7 @@ const leagueMatches = {
 };
 
 const Matches = () => {
-  const [league, setLeague] = useState<"angol" | "spanyol">("angol");
+  const [league, setLeague] = useState<LeagueKey>("angol");
   const matches = leagueMatches[league];
 
   return (

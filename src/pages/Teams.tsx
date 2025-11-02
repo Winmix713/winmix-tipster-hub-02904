@@ -3,6 +3,7 @@ import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import TeamStatisticsTable from "@/components/TeamStatisticsTable";
 import { Users } from "lucide-react";
+import { LEAGUE_TEAM_OPTIONS, LEAGUE_METADATA, type LeagueKey } from "@/data/teamOptions";
 
 // Mock statistics data - később Supabase-ből jön
 const generateTeamStats = (teamNames: string[]) => {
@@ -44,22 +45,9 @@ const generateTeamStats = (teamNames: string[]) => {
   });
 };
 
-const leagueTeams = {
-  angol: [
-    "Aston Oroszlán", "Brentford", "Brighton", "Chelsea", "Crystal Palace",
-    "Everton", "Fulham", "Liverpool", "London Ágyúk", "Manchester Kék",
-    "Newcastle", "Nottingham", "Tottenham", "Vörös Ördögök", "West Ham", "Wolverhampton"
-  ],
-  spanyol: [
-    "Alaves", "Barcelona", "Bilbao", "Getafe", "Girona", "Las Palmas",
-    "Madrid Fehér", "Madrid Piros", "Mallorca", "Osasuna", "San Sebastian",
-    "Sevilla Piros", "Sevilla Zöld", "Valencia", "Vigo", "Villarreal"
-  ]
-};
-
 const Teams = () => {
-  const [league, setLeague] = useState<"angol" | "spanyol">("angol");
-  const teamStats = generateTeamStats(leagueTeams[league]);
+  const [league, setLeague] = useState<LeagueKey>("angol");
+  const teamStats = generateTeamStats(LEAGUE_TEAM_OPTIONS[league].map((team) => team.label));
 
   return (
     <div className="min-h-screen">
@@ -100,9 +88,9 @@ const Teams = () => {
             </div>
           </div>
 
-          <TeamStatisticsTable 
+          <TeamStatisticsTable
             teams={teamStats}
-            leagueName={league === "angol" ? "Angol Bajnokság" : "Spanyol Bajnokság"}
+            leagueName={LEAGUE_METADATA[league].displayName}
           />
         </div>
       </main>
