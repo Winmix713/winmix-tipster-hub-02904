@@ -15,6 +15,8 @@ import PredictionsView from "./pages/PredictionsView";
 import ScheduledJobs from "./pages/ScheduledJobs";
 import Phase9 from "./pages/Phase9";
 import NotFound from "./pages/NotFound";
+import PredictionsView from "./pages/PredictionsView";
+import CrossLeague from "./pages/CrossLeague";
 
 const queryClient = new QueryClient();
 
