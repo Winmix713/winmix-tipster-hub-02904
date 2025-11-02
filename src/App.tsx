@@ -14,7 +14,7 @@ import MatchDetail from "./pages/MatchDetail";
 import PredictionsView from "./pages/PredictionsView";
 import ScheduledJobs from "./pages/ScheduledJobs";
 import PredictionsView from "./pages/PredictionsView";
-import Analytics from "./pages/Analytics";
+import Monitoring from "./pages/Monitoring";
 import NotFound from "./pages/NotFound";
 import PredictionsView from "./pages/PredictionsView";
 import CrossLeague from "./pages/CrossLeague";
@@ -32,7 +32,7 @@ const App = () => (
           <Route path="/predictions" element={<PredictionsView />} />
           <Route path="/predictions/new" element={<NewPredictions />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/match/:id" element={<MatchDetail />} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/teams/:teamName" element={<TeamDetail />} />
