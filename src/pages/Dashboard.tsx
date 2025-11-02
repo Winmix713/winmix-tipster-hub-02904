@@ -1,129 +1,203 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, TrendingUp } from 'lucide-react';
-import { format } from 'date-fns';
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import Sidebar from "@/components/Sidebar";
+import TopBar from "@/components/TopBar";
+import StatisticsCards from "@/components/dashboard/StatisticsCards";
+import RecentPredictions from "@/components/dashboard/RecentPredictions";
+import PatternPerformanceChart from "@/components/dashboard/PatternPerformanceChart";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface Match {
+interface Prediction {
   id: string;
-  match_date: string;
-  status: string;
-  home_team: { name: string };
-  away_team: { name: string };
-  league: { name: string };
-  home_score?: number;
-  away_score?: number;
+  match: {
+    home_team: string;
+    away_team: string;
+    match_date: string;
+    league: string;
+  };
+  predicted_outcome: string;
+  confidence_score: number;
+  actual_outcome: string | null;
+  was_correct: boolean | null;
+}
+
+interface PatternData {
+  name: string;
+  accuracy: number;
+  total: number;
 }
 
 export default function Dashboard() {
-  const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [patternData, setPatternData] = useState<PatternData[]>([]);
+  const [stats, setStats] = useState({
+    totalPredictions: 0,
+    accuracy: 0,
+    topPattern: "",
+    winningStreak: 0,
+  });
 
   useEffect(() => {
-    fetchMatches();
+    fetchDashboardData();
   }, []);
 
-  async function fetchMatches() {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('matches')
-      .select(`
-        *,
-        home_team:teams!home_team_id(name),
-        away_team:teams!away_team_id(name),
-        league:leagues(name)
-      `)
-      .order('match_date', { ascending: true })
-      .limit(20);
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
 
-    if (error) {
-      console.error('Error fetching matches:', error);
-    } else {
-      setMatches(data || []);
+      // Fetch predictions with match details
+      const { data: predictionsData, error: predictionsError } = await supabase
+        .from("predictions")
+        .select(`
+          id,
+          predicted_outcome,
+          confidence_score,
+          actual_outcome,
+          was_correct,
+          match:matches(
+            match_date,
+            home_team:teams!matches_home_team_id_fkey(name),
+            away_team:teams!matches_away_team_id_fkey(name),
+            league:leagues(name)
+          )
+        `)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (predictionsError) throw predictionsError;
+
+      const formattedPredictions = predictionsData?.map((p: any) => ({
+        id: p.id,
+        predicted_outcome: p.predicted_outcome,
+        confidence_score: p.confidence_score,
+        actual_outcome: p.actual_outcome,
+        was_correct: p.was_correct,
+        match: {
+          home_team: p.match.home_team.name,
+          away_team: p.match.away_team.name,
+          match_date: p.match.match_date,
+          league: p.match.league.name,
+        },
+      })) || [];
+
+      setPredictions(formattedPredictions);
+
+      // Calculate statistics
+      const { data: allPredictions, error: allPredictionsError } = await supabase
+        .from("predictions")
+        .select("was_correct");
+
+      if (allPredictionsError) throw allPredictionsError;
+
+      const evaluatedPredictions = allPredictions?.filter((p) => p.was_correct !== null) || [];
+      const correctPredictions = evaluatedPredictions.filter((p) => p.was_correct).length;
+      const totalEvaluated = evaluatedPredictions.length;
+      const accuracy = totalEvaluated > 0 ? Math.round((correctPredictions / totalEvaluated) * 100) : 0;
+
+      // Calculate winning streak
+      let currentStreak = 0;
+      let maxStreak = 0;
+      const sortedPredictions = [...evaluatedPredictions].reverse();
+      
+      for (const pred of sortedPredictions) {
+        if (pred.was_correct) {
+          currentStreak++;
+          maxStreak = Math.max(maxStreak, currentStreak);
+        } else {
+          currentStreak = 0;
+        }
+      }
+
+      // Fetch pattern performance
+      const { data: patternAccuracy, error: patternError } = await supabase
+        .from("pattern_accuracy")
+        .select(`
+          total_predictions,
+          correct_predictions,
+          accuracy_rate,
+          template:pattern_templates(name)
+        `)
+        .order("accuracy_rate", { ascending: false });
+
+      if (patternError) throw patternError;
+
+      const formattedPatternData = patternAccuracy?.map((p: any) => ({
+        name: p.template.name,
+        accuracy: p.accuracy_rate,
+        total: p.total_predictions,
+      })) || [];
+
+      setPatternData(formattedPatternData);
+
+      const topPattern = formattedPatternData[0]?.name || "N/A";
+
+      setStats({
+        totalPredictions: allPredictions?.length || 0,
+        accuracy,
+        topPattern,
+        winningStreak: maxStreak,
+      });
+
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black">
+        <Sidebar />
+        <TopBar />
+        <main className="lg:ml-64 pt-16 lg:pt-0">
+          <div className="container mx-auto px-4 py-8">
+            <div className="mb-8">
+              <Skeleton className="h-12 w-64 mb-2" />
+              <Skeleton className="h-4 w-96" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-32" />
+              ))}
+            </div>
+            <Skeleton className="h-96 mb-8" />
+            <Skeleton className="h-96" />
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">WinMix Pattern Recognition</h1>
-        <p className="text-muted-foreground">
-          Pattern detection + AI prediction prototípus
-        </p>
-      </div>
+    <div className="min-h-screen bg-black">
+      <Sidebar />
+      <TopBar />
+      <main className="lg:ml-64 pt-16 lg:pt-0">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-gradient-emerald mb-2">
+              Dashboard
+            </h1>
+            <p className="text-muted-foreground">
+              Kövesd nyomon a predikciók pontosságát és teljesítményét
+            </p>
+          </div>
 
-      {loading ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Betöltés...</p>
+          <StatisticsCards
+            totalPredictions={stats.totalPredictions}
+            accuracy={stats.accuracy}
+            topPattern={stats.topPattern}
+            winningStreak={stats.winningStreak}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <RecentPredictions predictions={predictions} />
+            <PatternPerformanceChart data={patternData} />
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {matches.map((match) => (
-            <Card key={match.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-center justify-between mb-2">
-                  <Badge variant={match.status === 'scheduled' ? 'default' : 'secondary'}>
-                    {match.status === 'scheduled' ? 'Jövőbeli' : 'Befejezett'}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    {format(new Date(match.match_date), 'MMM dd')}
-                  </span>
-                </div>
-                <CardTitle className="text-lg">{match.league.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="font-semibold">{match.home_team.name}</p>
-                    </div>
-                    {match.status === 'finished' && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold">{match.home_score}</span>
-                        <span className="text-muted-foreground">-</span>
-                        <span className="text-2xl font-bold">{match.away_score}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-center">
-                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-bold">
-                      VS
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="font-semibold">{match.away_team.name}</p>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={() => navigate(`/match/${match.id}`)}
-                    className="w-full mt-4"
-                    variant={match.status === 'scheduled' ? 'default' : 'outline'}
-                  >
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    {match.status === 'scheduled' ? 'Elemzés indítása' : 'Eredmény megtekintése'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {matches.length === 0 && !loading && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Nincsenek mérkőzések az adatbázisban.</p>
-        </div>
-      )}
+      </main>
     </div>
   );
 }
