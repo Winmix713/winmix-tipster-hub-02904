@@ -11,6 +11,7 @@ import Matches from "./pages/Matches";
 import Leagues from "./pages/Leagues";
 import Dashboard from "./pages/Dashboard";
 import MatchDetail from "./pages/MatchDetail";
+import PredictionsView from "./pages/PredictionsView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/predictions" element={<PredictionsView />} />
           <Route path="/predictions/new" element={<NewPredictions />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/match/:id" element={<MatchDetail />} />

@@ -5,12 +5,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { TeamOption } from "@/data/teamOptions";
 
 interface MatchCardProps {
-  match: { home: string; away: string };
+  match: { home: TeamOption | null; away: TeamOption | null };
   index: number;
-  availableTeams: { home: string[]; away: string[] };
-  onMatchChange: (index: number, team: string, side: "home" | "away") => void;
+  availableTeams: { home: TeamOption[]; away: TeamOption[] };
+  onMatchChange: (index: number, teamValue: string, side: "home" | "away") => void;
 }
 
 const MatchCard = ({ match, index, availableTeams, onMatchChange }: MatchCardProps) => {
@@ -21,14 +22,14 @@ const MatchCard = ({ match, index, availableTeams, onMatchChange }: MatchCardPro
       </div>
 
       <div className="space-y-3">
-        <Select value={match.home} onValueChange={(value) => onMatchChange(index, value, "home")}>
+        <Select value={match.home?.value} onValueChange={(value) => onMatchChange(index, value, "home")}>
           <SelectTrigger className="glass-card border-white/10 bg-white/5 hover:bg-white/10">
             <SelectValue placeholder="Hazai csapat" />
           </SelectTrigger>
           <SelectContent className="bg-gray-900 border-white/10">
-            {availableTeams.home.map(team => (
-              <SelectItem key={team} value={team} className="hover:bg-white/10">
-                {team}
+            {availableTeams.home.map((team) => (
+              <SelectItem key={team.value} value={team.value} className="hover:bg-white/10">
+                {team.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -40,14 +41,14 @@ const MatchCard = ({ match, index, availableTeams, onMatchChange }: MatchCardPro
           </span>
         </div>
 
-        <Select value={match.away} onValueChange={(value) => onMatchChange(index, value, "away")}>
+        <Select value={match.away?.value} onValueChange={(value) => onMatchChange(index, value, "away")}>
           <SelectTrigger className="glass-card border-white/10 bg-white/5 hover:bg-white/10">
             <SelectValue placeholder="Vendég csapat" />
           </SelectTrigger>
           <SelectContent className="bg-gray-900 border-white/10">
-            {availableTeams.away.map(team => (
-              <SelectItem key={team} value={team} className="hover:bg-white/10">
-                {team}
+            {availableTeams.away.map((team) => (
+              <SelectItem key={team.value} value={team.value} className="hover:bg-white/10">
+                {team.label}
               </SelectItem>
             ))}
           </SelectContent>
