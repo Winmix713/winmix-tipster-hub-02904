@@ -232,6 +232,10 @@ export type Database = {
           predicted_home_score: number | null
           predicted_outcome: string
           was_correct: boolean | null
+          model_id: string | null
+          model_name: string | null
+          model_version: string | null
+          is_shadow_mode: boolean | null
         }
         Insert: {
           actual_outcome?: string | null
@@ -246,6 +250,10 @@ export type Database = {
           predicted_home_score?: number | null
           predicted_outcome: string
           was_correct?: boolean | null
+          model_id?: string | null
+          model_name?: string | null
+          model_version?: string | null
+          is_shadow_mode?: boolean | null
         }
         Update: {
           actual_outcome?: string | null
@@ -260,6 +268,10 @@ export type Database = {
           predicted_home_score?: number | null
           predicted_outcome?: string
           was_correct?: boolean | null
+          model_id?: string | null
+          model_name?: string | null
+          model_version?: string | null
+          is_shadow_mode?: boolean | null
         }
         Relationships: [
           {
@@ -267,6 +279,108 @@ export type Database = {
             columns: ["match_id"]
             isOneToOne: true
             referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      model_registry: {
+        Row: {
+          id: string
+          model_name: string
+          model_version: string
+          model_type: string | null
+          algorithm: string | null
+          hyperparameters: Json | null
+          traffic_allocation: number | null
+          total_predictions: number | null
+          accuracy: number | null
+          registered_at: string | null
+        }
+        Insert: {
+          id?: string
+          model_name: string
+          model_version: string
+          model_type?: string | null
+          algorithm?: string | null
+          hyperparameters?: Json | null
+          traffic_allocation?: number | null
+          total_predictions?: number | null
+          accuracy?: number | null
+          registered_at?: string | null
+        }
+        Update: {
+          id?: string
+          model_name?: string
+          model_version?: string
+          model_type?: string | null
+          algorithm?: string | null
+          hyperparameters?: Json | null
+          traffic_allocation?: number | null
+          total_predictions?: number | null
+          accuracy?: number | null
+          registered_at?: string | null
+        }
+        Relationships: []
+      }
+      model_experiments: {
+        Row: {
+          id: string
+          experiment_name: string
+          champion_model_id: string
+          challenger_model_id: string
+          started_at: string | null
+          target_sample_size: number | null
+          current_sample_size: number | null
+          significance_threshold: number | null
+          accuracy_diff: number | null
+          p_value: number | null
+          winner_model_id: string | null
+          decision: string | null
+          completed_at: string | null
+        }
+        Insert: {
+          id?: string
+          experiment_name: string
+          champion_model_id: string
+          challenger_model_id: string
+          started_at?: string | null
+          target_sample_size?: number | null
+          current_sample_size?: number | null
+          significance_threshold?: number | null
+          accuracy_diff?: number | null
+          p_value?: number | null
+          winner_model_id?: string | null
+          decision?: string | null
+          completed_at?: string | null
+        }
+        Update: {
+          id?: string
+          experiment_name?: string
+          champion_model_id?: string
+          challenger_model_id?: string
+          started_at?: string | null
+          target_sample_size?: number | null
+          current_sample_size?: number | null
+          significance_threshold?: number | null
+          accuracy_diff?: number | null
+          p_value?: number | null
+          winner_model_id?: string | null
+          decision?: string | null
+          completed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_experiments_champion_model_id_fkey"
+            columns: ["champion_model_id"]
+            isOneToOne: false
+            referencedRelation: "model_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "model_experiments_challenger_model_id_fkey"
+            columns: ["challenger_model_id"]
+            isOneToOne: false
+            referencedRelation: "model_registry"
             referencedColumns: ["id"]
           },
         ]
