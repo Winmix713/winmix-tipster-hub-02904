@@ -232,6 +232,10 @@ export type Database = {
           predicted_home_score: number | null
           predicted_outcome: string
           was_correct: boolean | null
+          model_id: string | null
+          model_name: string | null
+          model_version: string | null
+          is_shadow_mode: boolean | null
         }
         Insert: {
           actual_outcome?: string | null
@@ -246,6 +250,10 @@ export type Database = {
           predicted_home_score?: number | null
           predicted_outcome: string
           was_correct?: boolean | null
+          model_id?: string | null
+          model_name?: string | null
+          model_version?: string | null
+          is_shadow_mode?: boolean | null
         }
         Update: {
           actual_outcome?: string | null
@@ -260,6 +268,10 @@ export type Database = {
           predicted_home_score?: number | null
           predicted_outcome?: string
           was_correct?: boolean | null
+          model_id?: string | null
+          model_name?: string | null
+          model_version?: string | null
+          is_shadow_mode?: boolean | null
         }
         Relationships: [
           {
