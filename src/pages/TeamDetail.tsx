@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import StatCard from "@/components/StatCard";
 import { CSSBadge } from "@/components/CSSBadge";
 import { NarrativeSection } from "@/components/NarrativeSection";
+import TeamPatternsSection from "@/components/patterns/TeamPatternsSection";
 import { getMatchHistory } from "@/data/matchHistory";
 import { 
   generateTeamStatistics, 
@@ -14,7 +15,21 @@ import {
   calculatePoissonGoals 
 } from "@/lib/teamStatistics";
 
-const teamStats: Record<string, any> = {
+interface SimpleStat { value: number; color: string }
+interface DetailedStat { name: string; value: number }
+interface TeamInfo {
+  league: string;
+  form: string;
+  stats: {
+    attack: SimpleStat;
+    defense: SimpleStat;
+    midfield: SimpleStat;
+    overall: SimpleStat;
+  };
+  detailedStats: Record<string, DetailedStat[]>;
+}
+
+const teamStats: Record<string, TeamInfo> = {
   // Angol csapatok
   "Aston Oroszlán": {
     league: "angol",
@@ -372,7 +387,7 @@ const TeamDetail = () => {
               </div>
 
               <div className="space-y-4">
-                {Object.entries(team.stats).slice(0, 3).map(([key, stat]: [string, any]) => (
+                {Object.entries(team.stats).slice(0, 3).map(([key, stat]: [string, SimpleStat]) => (
                   <div key={key}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-muted-foreground capitalize">{key}</span>
@@ -391,6 +406,7 @@ const TeamDetail = () => {
 
             {/* Detailed Stats */}
             <div className="lg:col-span-2 space-y-6">
+              <TeamPatternsSection teamName={teamName || ""} />
               {/* Basic Match Statistics */}
               <StatCard
                 title="Alapvető Mérkőzésstatisztikák"
@@ -449,11 +465,11 @@ const TeamDetail = () => {
               />
 
               {/* Original Detailed Stats */}
-              {Object.entries(team.detailedStats).map(([category, stats]: [string, any]) => (
+              {Object.entries(team.detailedStats).map(([category, stats]: [string, DetailedStat[]]) => (
                 <div key={category} className="rounded-2xl bg-card ring-1 ring-border p-6">
                   <h3 className="text-lg font-semibold text-foreground mb-4">{category}</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {stats.map((stat: any) => (
+                    {stats.map((stat: DetailedStat) => (
                       <div key={stat.name}>
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-muted-foreground">{stat.name}</span>
