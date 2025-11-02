@@ -300,6 +300,98 @@ export type Database = {
           },
         ]
       }
+      pattern_definitions: {
+        Row: {
+          id: string
+          pattern_name: string
+          detection_function: string
+          min_sample_size: number
+          min_confidence_threshold: number
+          priority: number
+          is_active: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          pattern_name: string
+          detection_function: string
+          min_sample_size?: number
+          min_confidence_threshold?: number
+          priority?: number
+          is_active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          pattern_name?: string
+          detection_function?: string
+          min_sample_size?: number
+          min_confidence_threshold?: number
+          priority?: number
+          is_active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      team_patterns: {
+        Row: {
+          id: string
+          team_id: string
+          pattern_type: string
+          pattern_name: string
+          confidence: number
+          strength: number
+          valid_from: string
+          valid_until: string | null
+          prediction_impact: number
+          historical_accuracy: number
+          pattern_metadata: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          team_id: string
+          pattern_type: string
+          pattern_name: string
+          confidence?: number
+          strength?: number
+          valid_from?: string
+          valid_until?: string | null
+          prediction_impact?: number
+          historical_accuracy?: number
+          pattern_metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          team_id?: string
+          pattern_type?: string
+          pattern_name?: string
+          confidence?: number
+          strength?: number
+          valid_from?: string
+          valid_until?: string | null
+          prediction_impact?: number
+          historical_accuracy?: number
+          pattern_metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_patterns_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -8,3 +8,12 @@ verify_jwt = false
 
 [functions.get-predictions]
 verify_jwt = false
+
+[functions.patterns-detect]
+verify_jwt = false
+
+[functions.patterns-team]
+verify_jwt = false
+
+[functions.patterns-verify]
+verify_jwt = false
