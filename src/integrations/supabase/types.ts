@@ -223,6 +223,9 @@ export type Database = {
           actual_outcome: string | null
           btts_prediction: boolean | null
           confidence_score: number
+          css_score: number | null
+          prediction_factors: Json | null
+          calibration_error: number | null
           created_at: string | null
           evaluated_at: string | null
           id: string
@@ -241,6 +244,9 @@ export type Database = {
           actual_outcome?: string | null
           btts_prediction?: boolean | null
           confidence_score: number
+          css_score?: number | null
+          prediction_factors?: Json | null
+          calibration_error?: number | null
           created_at?: string | null
           evaluated_at?: string | null
           id?: string
@@ -259,6 +265,9 @@ export type Database = {
           actual_outcome?: string | null
           btts_prediction?: boolean | null
           confidence_score?: number
+          css_score?: number | null
+          prediction_factors?: Json | null
+          calibration_error?: number | null
           created_at?: string | null
           evaluated_at?: string | null
           id?: string
@@ -283,139 +292,83 @@ export type Database = {
           },
         ]
       }
-      cross_league_correlations: {
+      model_performance: {
         Row: {
           id: string
-          league_a_id: string
-          league_b_id: string
-          correlation_type: "form_impact" | "home_advantage" | "scoring_trend"
-          coefficient: number
-          p_value: number | null
-          sample_size: number
-          insight_summary: string | null
-          last_calculated: string
+          model_version: string
+          period_start: string
+          period_end: string
+          total_predictions: number
+          accuracy_overall: number | null
+          accuracy_winner: number | null
+          accuracy_btts: number | null
+          confidence_calibration_score: number | null
+          league_breakdown: Json | null
+          created_at: string | null
         }
         Insert: {
           id?: string
-          league_a_id: string
-          league_b_id: string
-          correlation_type: "form_impact" | "home_advantage" | "scoring_trend"
-          coefficient: number
-          p_value?: number | null
-          sample_size?: number
-          insight_summary?: string | null
-          last_calculated?: string
+          model_version: string
+          period_start: string
+          period_end: string
+          total_predictions?: number
+          accuracy_overall?: number | null
+          accuracy_winner?: number | null
+          accuracy_btts?: number | null
+          confidence_calibration_score?: number | null
+          league_breakdown?: Json | null
+          created_at?: string | null
         }
         Update: {
           id?: string
-          league_a_id?: string
-          league_b_id?: string
-          correlation_type?: "form_impact" | "home_advantage" | "scoring_trend"
-          coefficient?: number
-          p_value?: number | null
-          sample_size?: number
-          insight_summary?: string | null
-          last_calculated?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: null
-            columns: ["league_a_id"]
-            isOneToOne: false
-            referencedRelation: "leagues"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: null
-            columns: ["league_b_id"]
-            isOneToOne: false
-            referencedRelation: "leagues"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      meta_patterns: {
-        Row: {
-          id: string
-          pattern_name: string
-          pattern_type: string
-          supporting_leagues: string[]
-          evidence_strength: number
-          prediction_impact: number
-          pattern_description: string | null
-          discovered_at: string
-        }
-        Insert: {
-          id?: string
-          pattern_name: string
-          pattern_type: string
-          supporting_leagues?: string[]
-          evidence_strength: number
-          prediction_impact?: number
-          pattern_description?: string | null
-          discovered_at?: string
-        }
-        Update: {
-          id?: string
-          pattern_name?: string
-          pattern_type?: string
-          supporting_leagues?: string[]
-          evidence_strength?: number
-          prediction_impact?: number
-          pattern_description?: string | null
-          discovered_at?: string
+          model_version?: string
+          period_start?: string
+          period_end?: string
+          total_predictions?: number
+          accuracy_overall?: number | null
+          accuracy_winner?: number | null
+          accuracy_btts?: number | null
+          confidence_calibration_score?: number | null
+          league_breakdown?: Json | null
+          created_at?: string | null
         }
         Relationships: []
       }
-      league_characteristics: {
+      model_comparison: {
         Row: {
           id: string
-          league_id: string
-          avg_goals: number | null
-          home_advantage_index: number | null
-          competitive_balance_index: number | null
-          predictability_score: number | null
-          physicality_index: number | null
-          trend_data: Json | null
-          season: string | null
+          model_a_id: string
+          model_b_id: string
+          comparison_date: string | null
+          accuracy_diff: number | null
+          p_value: number | null
+          winning_model: string | null
+          sample_size: number
           created_at: string | null
-          updated_at: string | null
         }
         Insert: {
           id?: string
-          league_id: string
-          avg_goals?: number | null
-          home_advantage_index?: number | null
-          competitive_balance_index?: number | null
-          predictability_score?: number | null
-          physicality_index?: number | null
-          trend_data?: Json | null
-          season?: string | null
+          model_a_id: string
+          model_b_id: string
+          comparison_date?: string | null
+          accuracy_diff?: number | null
+          p_value?: number | null
+          winning_model?: string | null
+          sample_size?: number
           created_at?: string | null
-          updated_at?: string | null
         }
         Update: {
           id?: string
-          league_id?: string
-          avg_goals?: number | null
-          home_advantage_index?: number | null
-          competitive_balance_index?: number | null
-          predictability_score?: number | null
-          physicality_index?: number | null
-          trend_data?: Json | null
-          season?: string | null
+          model_a_id?: string
+          model_b_id?: string
+          comparison_date?: string | null
+          accuracy_diff?: number | null
+          p_value?: number | null
+          winning_model?: string | null
+          sample_size?: number
           created_at?: string | null
-          updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: null
-            columns: ["league_id"]
-            isOneToOne: false
-            referencedRelation: "leagues"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
       teams: {
         Row: {

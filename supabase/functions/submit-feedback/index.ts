@@ -86,11 +86,15 @@ serve(async (req) => {
     const wasCorrect = prediction.predicted_outcome === actualOutcome;
 
     // 4. Update prediction with feedback
+    const pScore = (prediction.css_score ?? prediction.confidence_score) / 100;
+    const calibrationError = Math.abs(pScore - (wasCorrect ? 1 : 0));
+
     const { error: predUpdateError } = await supabase
       .from('predictions')
       .update({
         actual_outcome: actualOutcome,
         was_correct: wasCorrect,
+        calibration_error: Math.round(calibrationError * 10000) / 10000,
         evaluated_at: new Date().toISOString()
       })
       .eq('id', prediction.id);
