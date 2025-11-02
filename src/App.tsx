@@ -31,6 +31,7 @@ const App = () => (
           <Route path="/predictions" element={<PredictionsView />} />
           <Route path="/predictions/new" element={<NewPredictions />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/match/:id" element={<MatchDetail />} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/teams/:teamName" element={<TeamDetail />} />
