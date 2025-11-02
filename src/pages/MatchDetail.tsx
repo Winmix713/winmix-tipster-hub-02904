@@ -221,6 +221,8 @@ export default function MatchDetail() {
           {match.status === 'finished' && !prediction.actual_outcome && (
             <FeedbackForm
               matchId={match.id}
+              homeTeam={match.home_team.name}
+              awayTeam={match.away_team.name}
               onSubmitted={handleFeedbackSubmitted}
             />
           )}

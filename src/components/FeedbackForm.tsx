@@ -2,19 +2,23 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, Save } from 'lucide-react';
+import ScoreInput from './ScoreInput';
+import HalftimeScoreInput from './HalftimeScoreInput';
 
 interface FeedbackFormProps {
   matchId: string;
+  homeTeam: string;
+  awayTeam: string;
   onSubmitted: () => void;
 }
 
-export default function FeedbackForm({ matchId, onSubmitted }: FeedbackFormProps) {
-  const [homeScore, setHomeScore] = useState<number>(0);
-  const [awayScore, setAwayScore] = useState<number>(0);
+export default function FeedbackForm({ matchId, homeTeam, awayTeam, onSubmitted }: FeedbackFormProps) {
+  const [fullTimeHome, setFullTimeHome] = useState<number>(0);
+  const [fullTimeAway, setFullTimeAway] = useState<number>(0);
+  const [halfTimeHome, setHalfTimeHome] = useState<number | null>(null);
+  const [halfTimeAway, setHalfTimeAway] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,9 +28,27 @@ export default function FeedbackForm({ matchId, onSubmitted }: FeedbackFormProps
     setSubmitting(true);
     setError(null);
 
+    // Validation: halftime scores cannot exceed full-time scores
+    if (halfTimeHome !== null && halfTimeHome > fullTimeHome) {
+      setError('A félidei hazai gólok száma nem lehet nagyobb a végleges eredménynél');
+      setSubmitting(false);
+      return;
+    }
+    if (halfTimeAway !== null && halfTimeAway > fullTimeAway) {
+      setError('A félidei vendég gólok száma nem lehet nagyobb a végleges eredménynél');
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.functions.invoke('submit-feedback', {
-        body: { matchId, homeScore, awayScore }
+        body: {
+          matchId,
+          homeScore: fullTimeHome,
+          awayScore: fullTimeAway,
+          halfTimeHomeScore: halfTimeHome,
+          halfTimeAwayScore: halfTimeAway
+        }
       });
 
       if (error) throw error;
@@ -61,31 +83,26 @@ export default function FeedbackForm({ matchId, onSubmitted }: FeedbackFormProps
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="homeScore">Hazai gólok</Label>
-              <Input
-                id="homeScore"
-                type="number"
-                min="0"
-                value={homeScore}
-                onChange={(e) => setHomeScore(Number(e.target.value))}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="awayScore">Vendég gólok</Label>
-              <Input
-                id="awayScore"
-                type="number"
-                min="0"
-                value={awayScore}
-                onChange={(e) => setAwayScore(Number(e.target.value))}
-                required
-              />
-            </div>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <ScoreInput
+            homeTeam={homeTeam}
+            awayTeam={awayTeam}
+            homeScore={fullTimeHome}
+            awayScore={fullTimeAway}
+            onHomeScoreChange={setFullTimeHome}
+            onAwayScoreChange={setFullTimeAway}
+          />
+
+          <HalftimeScoreInput
+            homeTeam={homeTeam}
+            awayTeam={awayTeam}
+            homeScore={halfTimeHome}
+            awayScore={halfTimeAway}
+            onHomeScoreChange={setHalfTimeHome}
+            onAwayScoreChange={setHalfTimeAway}
+            maxHomeScore={fullTimeHome}
+            maxAwayScore={fullTimeAway}
+          />
 
           {error && (
             <Alert variant="destructive">

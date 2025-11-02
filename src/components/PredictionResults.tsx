@@ -141,7 +141,9 @@ const PredictionResults = ({ predictions }: PredictionResultsProps) => {
               {expandedIndex === index && !feedbackSubmitted.has(index) && (
                 <div className="mt-3 pt-3 border-t border-white/10">
                   <FeedbackForm 
-                    matchId={pred.matchId} 
+                    matchId={pred.matchId}
+                    homeTeam={match.home}
+                    awayTeam={match.away}
                     onSubmitted={() => handleFeedbackSubmit(index)}
                   />
                 </div>
