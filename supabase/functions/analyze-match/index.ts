@@ -218,13 +218,35 @@ serve(async (req) => {
         match_id: matchId,
         predicted_outcome: predictedOutcome,
         confidence_score: confidence,
-        css_score: confidence,
+        css_score: confidence, // CSS Score for calibration
         prediction_factors: {
-          patterns: detectedPatterns,
-          form_scores: { home: homeFormScore, away: awayFormScore },
-          h2h_matches_considered: h2hMatches.length,
-          league_avg_goals: match.league.avg_goals_per_match,
+          patterns: detectedPatterns.map(p => p.template_name),
+          pattern_count: detectedPatterns.length,
+          form_scores: {
+            home: homeFormScore,
+            away: awayFormScore
+          },
+          h2h: {
+            matches_analyzed: h2hMatches.length,
+            home_wins: h2hMatches.filter(m => {
+              const isHomeTeam = m.home_team_id === match.home_team.id;
+              const teamScore = isHomeTeam ? m.home_score : m.away_score;
+              const oppScore = isHomeTeam ? m.away_score : m.home_score;
+              return teamScore > oppScore;
+            }).length,
+            away_wins: h2hMatches.filter(m => {
+              const isAwayTeamHome = m.home_team_id === match.away_team.id;
+              const teamScore = isAwayTeamHome ? m.home_score : m.away_score;
+              const oppScore = isAwayTeamHome ? m.away_score : m.home_score;
+              return teamScore > oppScore;
+            }).length
+          },
+          league_context: {
+            avg_goals_per_match: match.league.avg_goals_per_match,
+            league_name: match.league.name
+          }
         },
+        calibration_error: null,
         btts_prediction: match.league.avg_goals_per_match > 2.5
       })
       .select()
