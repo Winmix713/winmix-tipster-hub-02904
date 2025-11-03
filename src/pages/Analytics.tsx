@@ -26,6 +26,7 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
   const [points, setPoints] = useState<PerformancePoint[]>([]);
   const [summary, setSummary] = useState({ total: 0, accuracy: 0, avgCalibrationError: 0 });
+  const [cssScoreCount, setCssScoreCount] = useState(0);
 
   useEffect(() => {
     load();
@@ -78,6 +79,12 @@ export default function Analytics() {
       });
 
       setPoints(perf);
+
+      // CSS score availability for UI messaging
+      const cssScores = rows
+        .filter((p) => p.css_score !== null && p.css_score !== undefined)
+        .map((p) => p.css_score as number);
+      setCssScoreCount(cssScores.length);
 
       // Summary
       const allEvals = rows.filter((i) => i.was_correct !== null);
@@ -162,6 +169,12 @@ export default function Analytics() {
               </CardContent>
             </Card>
           </div>
+
+          {cssScoreCount === 0 && (
+            <div className="text-yellow-600 p-4 bg-yellow-50 rounded mb-6">
+              No CSS scores available yet. Predictions are being processed.
+            </div>
+          )}
 
           <ModelPerformanceChart data={points} />
         </div>
