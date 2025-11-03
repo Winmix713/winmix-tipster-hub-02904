@@ -1058,7 +1058,7 @@ export class SelfImprovingSystemService {
 
       if (error) throw error;
 
-      const totalImprovement = approvedFeatures?.reduce((sum, feature) => 
+      const totalImprovement = approvedFeatures?.reduce((sum: number, feature: { improvement_delta: number | null }) => 
         sum + (feature.improvement_delta || 0), 0) || 0;
 
       return {
