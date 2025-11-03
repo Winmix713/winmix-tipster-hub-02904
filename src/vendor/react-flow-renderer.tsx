@@ -1,6 +1,6 @@
 import React from "react";
 
-export type Node = { id: string; data?: Record<string, unknown>; position: { x: number; y: number }; style?: React.CSSProperties };
+export type Node = { id: string; data?: { label?: React.ReactNode; [key: string]: unknown }; position: { x: number; y: number }; style?: React.CSSProperties };
 export type Edge = { id: string; source: string; target: string };
 
 export default function ReactFlow({ nodes, children }: { nodes: Node[]; edges?: Edge[]; children?: React.ReactNode; fitView?: boolean }) {
@@ -27,6 +27,6 @@ export default function ReactFlow({ nodes, children }: { nodes: Node[]; edges?: 
   );
 }
 
-export function MiniMap() { return null; }
+export function MiniMap(_props?: { pannable?: boolean; zoomable?: boolean }) { return null; }
 export function Controls() { return null; }
-export function Background() { return null; }
+export function Background(_props?: { gap?: number; size?: number }) { return null; }

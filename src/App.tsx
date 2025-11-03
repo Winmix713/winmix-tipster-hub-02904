@@ -17,7 +17,6 @@ import Phase9 from "./pages/Phase9";
 import NotFound from "./pages/NotFound";
 import CrossLeague from "./pages/CrossLeague";
 import Analytics from "./pages/Analytics";
-import Models from "./pages/Models";
 import Monitoring from "./pages/Monitoring";
 
 const queryClient = new QueryClient();
@@ -35,7 +34,6 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/monitoring" element={<Monitoring />} />
-          <Route path="/models" element={<Models />} />
           <Route path="/crossleague" element={<CrossLeague />} />
           <Route path="/match/:id" element={<MatchDetail />} />
           <Route path="/teams" element={<Teams />} />

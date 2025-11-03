@@ -228,7 +228,7 @@ export class MarketIntegrationService {
       }
 
       // Store odds in database
-      const storedOdds = await this.storeMarketOdds(matchId, oddsData.data!);
+      const storedOdds = await this.storeMarketOdds(matchId, (oddsData.data ?? []) as unknown[]);
 
       return {
         success: true,
@@ -465,7 +465,7 @@ export class MarketIntegrationService {
   private static async storeMarketOdds(matchId: string, oddsData: unknown[]): Promise<MarketOdds[]> {
     const storedOdds: MarketOdds[] = [];
 
-    for (const odds of oddsData) {
+    for (const odds of oddsData as any[]) {
       const { data, error } = await supabase
         .from('market_odds')
         .upsert({

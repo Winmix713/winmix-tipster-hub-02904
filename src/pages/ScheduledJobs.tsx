@@ -60,10 +60,6 @@ export default function ScheduledJobs() {
     queryFn: fetchLogs,
     enabled: logsOpen && Boolean(selectedJob),
     refetchOnWindowFocus: false,
-    onError: (err) => {
-      const message = err instanceof Error ? err.message : "Nem sikerült betölteni a naplókat";
-      toast.error(message);
-    },
   });
 
   const toggleMutation = useMutation<JobSummary | undefined, Error, { jobId: string; enabled: boolean }>({
@@ -210,7 +206,7 @@ export default function ScheduledJobs() {
         open={logsOpen}
         onOpenChange={handleCloseLogs}
         job={selectedJob}
-        logs={logsQuery.data ?? []}
+        logs={(logsQuery.data ?? []) as JobLog[]}
         isLoading={logsQuery.isLoading}
         onRefresh={() => void logsQuery.refetch()}
       />

@@ -1,5 +1,5 @@
 import React from "react";
-import ReactFlow, { Background, Controls, MiniMap, Edge, Node } from "react-flow-renderer";
+import ReactFlow, { Background, Controls, MiniMap, Edge, Node } from "@/vendor/react-flow-renderer";
 import type { ComputationGraphResponse } from "@/types/monitoring";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
