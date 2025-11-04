@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ interface Prediction {
 interface Pattern {
   template_name: string;
   confidence_boost: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 export default function MatchDetail() {
@@ -47,14 +47,7 @@ export default function MatchDetail() {
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (id) {
-      fetchMatch();
-      fetchPrediction();
-    }
-  }, [id]);
-
-  async function fetchMatch() {
+  const fetchMatch = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('matches')
@@ -74,9 +67,9 @@ export default function MatchDetail() {
       setMatch(data);
     }
     setLoading(false);
-  }
+  }, [id]);
 
-  async function fetchPrediction() {
+  const fetchPrediction = useCallback(async () => {
     const { data } = await supabase
       .from('predictions')
       .select('*')
@@ -84,7 +77,14 @@ export default function MatchDetail() {
       .maybeSingle();
 
     setPrediction(data);
-  }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchMatch();
+      fetchPrediction();
+    }
+  }, [id, fetchMatch, fetchPrediction]);
 
   async function handleAnalyze() {
     if (!match) return;
