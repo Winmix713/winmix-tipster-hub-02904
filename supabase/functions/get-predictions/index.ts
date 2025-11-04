@@ -22,7 +22,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Build query
-    let query = supabase
+    const query = supabase
       .from('predictions')
       .select(`
         *,

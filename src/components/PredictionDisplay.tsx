@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Trophy, Target, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Trophy, Target, TrendingUp, CheckCircle2, type LucideIcon } from 'lucide-react';
 
 interface Pattern {
   template_name: string;
   confidence_boost: number;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 interface PredictionDisplayProps {
@@ -27,7 +27,7 @@ const PATTERN_LABELS: Record<string, string> = {
   high_scoring_league: 'Gólgazdag liga'
 };
 
-const PATTERN_ICONS: Record<string, any> = {
+const PATTERN_ICONS: Record<string, LucideIcon> = {
   home_winning_streak: Trophy,
   away_winning_streak: Trophy,
   h2h_dominance: Target,

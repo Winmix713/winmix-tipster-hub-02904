@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, TrendingUp, Users, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { CollaborativeIntelligenceService } from '@/lib/phase9-api';
-import type { UserPredictionForm as UserPredictionFormData, UserPredictionFormProps } from '@/types/phase9';
+import type { UserPredictionForm as UserPredictionFormData, UserPredictionFormProps, CrowdWisdom, DivergenceAnalysis, CrowdWisdomDisplayProps } from '@/types/phase9';
 
 // Form validation schema
 const predictionSchema = z.object({
@@ -119,7 +119,7 @@ export const UserPredictionForm: React.FC<UserPredictionFormProps> = ({
               <Label htmlFor="predicted_outcome">Match Outcome</Label>
               <Select
                 value={predictedOutcome}
-                onValueChange={(value) => setValue('predicted_outcome', value as any)}
+                onValueChange={(value) => setValue('predicted_outcome', value as 'home_win' | 'draw' | 'away_win')}
                 disabled={disabled}
               >
                 <SelectTrigger>
@@ -228,7 +228,7 @@ export const UserPredictionForm: React.FC<UserPredictionFormProps> = ({
                   <Label>Goals Over/Under 2.5</Label>
                   <Select
                     value={watch('over_under_prediction')}
-                    onValueChange={(value) => setValue('over_under_prediction', value as any)}
+                    onValueChange={(value) => setValue('over_under_prediction', value as 'over_2.5' | 'under_2.5')}
                     disabled={disabled}
                   >
                     <SelectTrigger>
@@ -287,8 +287,8 @@ export const UserPredictionForm: React.FC<UserPredictionFormProps> = ({
 import type { CrowdWisdomDisplayProps } from '@/types/phase9';
 
 interface CrowdWisdomData {
-  crowdWisdom?: any;
-  divergence?: any;
+  crowdWisdom?: CrowdWisdom;
+  divergence?: DivergenceAnalysis;
   isLoading: boolean;
   error?: string;
 }

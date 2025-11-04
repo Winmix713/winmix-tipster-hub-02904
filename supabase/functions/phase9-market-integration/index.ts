@@ -61,7 +61,7 @@ serve(async (req) => {
 })
 
 // Handle odds fetching with external API integration
-async function handleGetOdds(matchId: string, supabase: any) {
+async function handleGetOdds(matchId: string, supabase: { from(table: string): unknown }) {
   try {
     // Check if we have recent odds (cache for 5 minutes)
     const { data: cachedOdds, error: cacheError } = await supabase
@@ -141,7 +141,7 @@ async function handleGetOdds(matchId: string, supabase: any) {
 }
 
 // Handle value bets calculation
-async function handleGetValueBets(req: Request, supabase: any) {
+async function handleGetValueBets(req: Request, supabase: { from(table: string): unknown }) {
   try {
     const url = new URL(req.url)
     const maxResults = parseInt(url.searchParams.get('maxResults') || '50')
@@ -265,7 +265,7 @@ async function handleGetValueBets(req: Request, supabase: any) {
 }
 
 // Fetch odds from external API with retry logic
-async function fetchExternalOdds(matchId: string, attempt: number = 0): Promise<{ success: boolean; data?: any; error?: string }> {
+async function fetchExternalOdds(matchId: string, attempt: number = 0): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
   try {
     if (!ODDS_API_CONFIG.apiKey) {
       throw new Error('Odds API key not configured')
@@ -330,7 +330,7 @@ function generateMockOddsData(matchId: string) {
 }
 
 // Store market odds in database
-async function storeMarketOdds(matchId: string, oddsData: any[], supabase: any) {
+async function storeMarketOdds(matchId: string, oddsData: Record<string, unknown>[], supabase: { from(table: string): unknown }) {
   const storedOdds = []
 
   for (const odds of oddsData) {
@@ -361,7 +361,7 @@ async function storeMarketOdds(matchId: string, oddsData: any[], supabase: any) 
 }
 
 // Helper functions for calculations
-function getOutcomeProbability(prediction: any, outcome: string): number {
+function getOutcomeProbability(prediction: { confidence_score: number; predicted_outcome: string }, outcome: string): number {
   const baseProb = prediction.confidence_score / 100
   
   if (prediction.predicted_outcome === outcome) {

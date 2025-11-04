@@ -602,7 +602,7 @@ export const FeatureGenerationWizard: React.FC<FeatureGenerationWizardProps> = (
                       <p className="text-sm text-gray-600">{type.description}</p>
                     </div>
                     <div className={`w-4 h-4 rounded-full border-2 ${
-                      config.feature_types.includes(type.value as any)
+                      config.feature_types.includes(type.value as 'polynomial' | 'interaction' | 'ratio' | 'temporal' | 'aggregate')
                         ? 'bg-blue-500 border-blue-500'
                         : 'border-gray-300'
                     }`} />

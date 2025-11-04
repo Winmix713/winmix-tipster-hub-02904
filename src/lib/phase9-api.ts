@@ -493,7 +493,7 @@ export class MarketIntegrationService {
   /**
    * Get outcome probability from model prediction
    */
-  private static getOutcomeProbability(prediction: any, outcome: string): number {
+  private static getOutcomeProbability(prediction: UserPrediction, outcome: string): number {
     // In a real implementation, this would extract the probability for the specific outcome
     // For now, we'll use a simplified approach based on confidence score
     const baseProb = prediction.confidence_score / 100;
@@ -677,7 +677,7 @@ export class TemporalDecayService {
         .insert({
           table_name: tableName,
           record_id: recordId,
-          data_type: dataType as any,
+          data_type: dataType as 'match' | 'team_stats' | 'pattern' | 'odds' | 'user_prediction',
           last_updated: new Date().toISOString(),
           decay_rate: decayRate || defaultDecayRate,
           freshness_score: 1.0,
@@ -850,7 +850,7 @@ export class SelfImprovingSystemService {
    */
   static async testFeature(
     experimentId: string
-  ): Promise<{ success: boolean; result?: any; error?: string }> {
+  ): Promise<{ success: boolean; result?: FeatureTestResult; error?: string }> {
     try {
       // Get experiment details
       const { data: experiment, error: fetchError } = await supabase

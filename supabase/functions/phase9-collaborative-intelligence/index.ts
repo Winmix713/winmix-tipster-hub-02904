@@ -66,7 +66,7 @@ serve(async (req) => {
 })
 
 // Handle user prediction submission
-async function handleUserPrediction(req: Request, supabase: any) {
+async function handleUserPrediction(req: Request, supabase: { from(table: string): unknown }) {
   try {
     const body = await req.json()
     const validatedData = userPredictionSchema.parse(body)
@@ -120,7 +120,7 @@ async function handleUserPrediction(req: Request, supabase: any) {
 }
 
 // Handle crowd wisdom retrieval
-async function handleGetCrowdWisdom(matchId: string, supabase: any) {
+async function handleGetCrowdWisdom(matchId: string, supabase: { from(table: string): unknown }) {
   try {
     const { data, error } = await supabase
       .from('crowd_wisdom')

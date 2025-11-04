@@ -68,7 +68,7 @@ serve(async (req) => {
 })
 
 // Handle feature generation
-async function handleGenerateFeatures(req: Request, supabase: any) {
+async function handleGenerateFeatures(req: Request, supabase: { from(table: string): unknown }) {
   try {
     const body = await req.json()
     const validatedData = featureGenerationSchema.parse(body)
@@ -134,7 +134,7 @@ async function handleGenerateFeatures(req: Request, supabase: any) {
 }
 
 // Handle feature testing
-async function handleTestFeature(req: Request, supabase: any) {
+async function handleTestFeature(req: Request, supabase: { from(table: string): unknown }) {
   try {
     const body = await req.json()
     const validatedData = featureTestSchema.parse(body)
@@ -198,7 +198,7 @@ async function handleTestFeature(req: Request, supabase: any) {
 }
 
 // Handle continuous learning pipeline
-async function handleContinuousLearning(req: Request, supabase: any) {
+async function handleContinuousLearning(req: Request, supabase: { from(table: string): unknown }) {
   try {
     let experimentsGenerated = 0
     let experimentsCompleted = 0
@@ -387,7 +387,7 @@ async function generateFeaturesByType(
 }
 
 // Simulate feature testing (in real implementation, this would run actual A/B tests)
-async function simulateFeatureTest(experiment: any) {
+async function simulateFeatureTest(experiment: { id: string; feature_expression: string }) {
   // Simulate A/B testing results
   const controlAccuracy = 65 + Math.random() * 10 // 65-75%
   const testAccuracy = controlAccuracy + (Math.random() - 0.3) * 5 // -1.5% to +3.5%

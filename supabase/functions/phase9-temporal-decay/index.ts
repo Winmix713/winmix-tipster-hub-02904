@@ -60,7 +60,7 @@ serve(async (req) => {
 })
 
 // Handle freshness score calculation
-async function handleCalculateFreshness(req: Request, supabase: any) {
+async function handleCalculateFreshness(req: Request, supabase: { from(table: string): unknown }) {
   try {
     const body = await req.json()
     const validatedData = freshnessCalculationSchema.parse(body)
@@ -147,7 +147,7 @@ async function handleCalculateFreshness(req: Request, supabase: any) {
 }
 
 // Handle stale data checking and refresh
-async function handleCheckStaleData(req: Request, supabase: any) {
+async function handleCheckStaleData(req: Request, supabase: { from(table: string): unknown }) {
   try {
     // Get all stale records
     const { data: staleRecords, error: fetchError } = await supabase

@@ -27,6 +27,27 @@ interface PatternData {
   total: number;
 }
 
+interface RawPrediction {
+  id: string;
+  predicted_outcome: string;
+  confidence_score: number;
+  actual_outcome: string | null;
+  was_correct: boolean | null;
+  match: {
+    match_date: string;
+    home_team: { name: string };
+    away_team: { name: string };
+    league: { name: string };
+  };
+}
+
+interface RawPatternAccuracy {
+  total_predictions: number;
+  correct_predictions: number;
+  accuracy_rate: number;
+  template: { name: string };
+}
+
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
@@ -67,7 +88,7 @@ export default function Dashboard() {
 
       if (predictionsError) throw predictionsError;
 
-      const formattedPredictions = predictionsData?.map((p: any) => ({
+      const formattedPredictions = (predictionsData as RawPrediction[])?.map((p: RawPrediction) => ({
         id: p.id,
         predicted_outcome: p.predicted_outcome,
         confidence_score: p.confidence_score,
@@ -122,7 +143,7 @@ export default function Dashboard() {
 
       if (patternError) throw patternError;
 
-      const formattedPatternData = patternAccuracy?.map((p: any) => ({
+      const formattedPatternData = (patternAccuracy as RawPatternAccuracy[])?.map((p: RawPatternAccuracy) => ({
         name: p.template.name,
         accuracy: p.accuracy_rate,
         total: p.total_predictions,
