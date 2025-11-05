@@ -87,7 +87,15 @@ src/
 supabase/functions/   # Edge Functions powering jobs and analytics orchestration
 ```
 
-Supplementary documentation:
+## 📚 Documentation
+
+### User Guides
+- **[📖 Teljes Felhasználói Útmutató](docs/USER_GUIDE.md)** – Comprehensive end-to-end user guide (Hungarian primary, English summaries)
+- **[⚡ Gyors Kezdés](docs/QUICK_START.md)** – 10-15 minute quick start guide (Hungarian)
+- **[👥 Szerepkörök és Jogosultságok](docs/ROLE_PERMISSIONS.md)** – Role-based access control matrix (Hungarian)
+
+### Technical Documentation
+- **[🔐 Auth útmutató](AUTHENTICATION.md)** – Authentication & authorization implementation
 - `WinMix_TipsterHub_Phase_3-9_Components_EN.md` – deep dive into components per phase.
 - `PHASE9_IMPLEMENTATION.md` – architectural notes on the advanced collaborative intelligence layer.
 
