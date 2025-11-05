@@ -171,11 +171,18 @@ npm run dev
   ```
 
 ### Testing
-Run targeted tests (e.g., Phase 9 suite):
-```bash
-npm test -- Phase9
-```
-(Full CI will execute linting, type-checks, and all feature tests.)
+
+The project now includes unit, integration, end-to-end, and Supabase backend checks. Key commands:
+
+| Command | Description |
+| --- | --- |
+| `npm test` | Run Vitest unit and integration suites with coverage reporting (outputs to `coverage/`). |
+| `npm run test:watch` | Execute Vitest in watch mode for rapid iteration. |
+| `npm run test:e2e` | Launch Playwright browser flows (dev server is started automatically). |
+| `npm run test:supabase` | Execute Deno-based validation for shared Supabase schemas and policies. |
+| `npm run test:all` | Run Vitest coverage followed by Supabase backend checks. |
+
+Coverage summaries are printed to the console and detailed HTML/LCOV reports land in `coverage/`. Playwright reads Supabase defaults from `playwright.config.ts`; override via environment variables when targeting real backends.
 
 ---
 
@@ -200,7 +207,9 @@ npm test -- Phase9
 npm run dev                              # Start local dev server
 npm run build                            # Build for production
 npm run lint                             # Run ESLint
-npm test                                 # Run all tests
+npm test                                 # Run Vitest suites with coverage
+npm run test:supabase                    # Run Supabase (Deno) checks
+npm run test:e2e                         # Execute Playwright flows
 
 # Database Operations
 supabase db push --project-ref <ID>     # Apply migrations
