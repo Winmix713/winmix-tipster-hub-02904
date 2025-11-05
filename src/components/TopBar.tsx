@@ -1,9 +1,20 @@
 import { useState, useEffect } from "react";
-import { Menu, Activity, Target, Clock, Zap } from "lucide-react";
+import { Menu, Activity, Target, Clock, Zap, User, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const TopBar = () => {
   const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
   const [currentTime, setCurrentTime] = useState("");
   const [currentDate, setCurrentDate] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -80,6 +91,48 @@ const TopBar = () => {
               <Clock className="w-4 h-4" /> {currentTime}
             </span>
           </div>
+          
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <User className="w-4 h-4" />
+                  {profile?.full_name || user.email}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium">{profile?.full_name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                    {profile?.role && (
+                      <p className="text-xs text-muted-foreground capitalize">Role: {profile.role}</p>
+                    )}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                  Dashboard
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => signOut()}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate('/login')}
+            >
+              Sign In
+            </Button>
+          )}
         </div>
       </div>
     </>
