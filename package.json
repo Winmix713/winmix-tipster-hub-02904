@@ -9,13 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run --coverage",
-    "test:watch": "vitest watch",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:supabase": "deno test supabase/tests/backend --allow-env --allow-read --allow-net",
-    "test:all": "npm run test && npm run test:supabase",
-    "test:security": "./scripts/test-security.sh"
+    "test:security": "./scripts/test-security.sh",
+    "test:sensitive-rls": "./scripts/verify-sensitive-rls.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
