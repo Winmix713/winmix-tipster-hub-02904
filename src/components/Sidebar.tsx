@@ -1,4 +1,4 @@
-import { Home, Users, Calendar as CalendarIcon, Trophy, Settings, Sparkles, Clock, Brain, LayoutDashboard, ListChecks, LineChart, FlaskConical, Network, Activity } from "lucide-react";
+import { Home, Users, Calendar as CalendarIcon, Trophy, Settings, Sparkles, Clock, Brain, LayoutDashboard, ListChecks, LineChart, FlaskConical, Network, Activity, Shield, Database, Key } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
@@ -193,6 +193,79 @@ const Sidebar = () => {
             >
               {({ isActive }) => (
                 <Brain className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              )}
+            </NavLink>
+            
+            {/* Admin Section */}
+            <div className="w-full h-px bg-border my-2"></div>
+            <NavLink 
+              to="/admin/jobs" 
+              className={({ isActive }) => 
+                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
+                  isActive 
+                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
+                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <Clock className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              )}
+            </NavLink>
+            <NavLink 
+              to="/admin/models" 
+              className={({ isActive }) => 
+                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
+                  isActive 
+                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
+                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <FlaskConical className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              )}
+            </NavLink>
+            <NavLink 
+              to="/admin/matches" 
+              className={({ isActive }) => 
+                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
+                  isActive 
+                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
+                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <CalendarIcon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              )}
+            </NavLink>
+            <NavLink 
+              to="/admin/monitoring" 
+              className={({ isActive }) => 
+                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
+                  isActive 
+                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
+                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <Activity className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+              )}
+            </NavLink>
+            <NavLink 
+              to="/admin/environment" 
+              className={({ isActive }) => 
+                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
+                  isActive 
+                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
+                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <Key className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
               )}
             </NavLink>
           </div>
