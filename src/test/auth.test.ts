@@ -152,8 +152,8 @@ describe('Authentication Flow', () => {
     });
 
     it('should validate password confirmation match', () => {
-      const password = 'password123';
-      const confirmPassword = 'password123';
+      const password = 'testPassword123!';
+      const confirmPassword = 'testPassword123!';
       const mismatchPassword = 'different';
 
       expect(password === confirmPassword).toBe(true);

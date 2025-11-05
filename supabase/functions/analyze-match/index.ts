@@ -1,6 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+// Validation schema
+const AnalyzeMatchSchema = z.object({
+  matchId: z.string().uuid(),
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -92,14 +98,51 @@ serve(async (req) => {
   }
 
   try {
-    const { matchId } = await req.json();
+    // Create authenticated Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    )
 
-    if (!matchId) {
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'matchId is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
+
+    // Check if user has required role (analyst or admin)
+    const { data: profile } = await supabaseClient
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || !['admin', 'analyst'].includes(profile.role)) {
+      return new Response(
+        JSON.stringify({ error: 'Insufficient permissions. Admin or Analyst role required.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validate input
+    const body = await req.json()
+    const validation = AnalyzeMatchSchema.safeParse(body)
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { matchId } = validation.data
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -278,7 +321,23 @@ serve(async (req) => {
       }
     }
 
-    console.log(`✅ Prediction created for match ${matchId}: ${predictedOutcome} (${confidence}%)`);
+    // Log the action for audit
+    await supabaseClient
+      .from('admin_audit_log')
+      .insert({
+        action: 'analyze_match',
+        resource_type: 'match',
+        resource_id: matchId,
+        details: {
+          predicted_outcome: predictedOutcome,
+          confidence_score: confidence,
+          patterns_detected: detectedPatterns.length,
+          submitted_by: user.email
+        },
+        created_by: user.id
+      });
+
+    console.log(`✅ Prediction created for match ${matchId}: ${predictedOutcome} (${confidence}%) by ${user.email}`);
 
     return new Response(
       JSON.stringify({ 

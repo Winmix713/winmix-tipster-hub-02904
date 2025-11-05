@@ -1,5 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+// Validation schema
+const PatternsTeamSchema = z.object({
+  team_name: z.string().optional(),
+  team_id: z.string().uuid().optional(),
+}).refine((data) => data.team_name || data.team_id, {
+  message: "Either team_name or team_id must be provided",
+});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +26,26 @@ serve(async (req) => {
   }
 
   try {
+    // Create authenticated Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    )
+
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -27,18 +56,19 @@ serve(async (req) => {
       params.team_name = url.searchParams.get("team_name") ?? undefined;
       params.team_id = url.searchParams.get("team_id") ?? undefined;
     } else {
-      params = await req.json();
+      const body = await req.json()
+      const validation = PatternsTeamSchema.safeParse(body)
+      if (!validation.success) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid input', details: validation.error }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      params = validation.data as RequestBody
     }
 
     let teamId = params.team_id ?? "";
     let teamName = params.team_name ?? "";
-
-    if (!teamId && !teamName) {
-      return new Response(
-        JSON.stringify({ error: "team_name or team_id is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
 
     if (!teamId) {
       const { data: team, error: teamError } = await supabase
