@@ -10,21 +10,22 @@ import {
   Clock, 
   Brain, 
   Settings,
-  AlertTriangle,
-  CheckCircle,
   TrendingUp,
   Activity
 } from 'lucide-react';
 
 // Import Phase 9 components
 import { UserPredictionForm } from './collaborative-intelligence';
-import { CrowdWisdomDisplay } from './collaborative-intelligence';
+import { CrowdWisdomDisplay } from './CrowdWisdomDisplay';
 import { MarketOddsDisplay } from './market-integration';
 import { ValueBetHighlights } from './market-integration';
 import { TemporalDecayDashboard } from './temporal-decay';
 import { FreshnessIndicator } from './temporal-decay';
 import { ExperimentDashboard } from './self-improving-system';
 import { FeatureGenerationWizard } from './self-improving-system';
+import { SystemStatusCard } from './SystemStatusCard';
+import { QuickActionCard } from './QuickActionCard';
+import { HealthMetric } from './HealthMetric';
 
 // Import services for status checks
 import { 
@@ -284,134 +285,6 @@ export const Phase9Dashboard: React.FC<Phase9DashboardProps> = ({ matchId }) => 
           />
         </TabsContent>
       </Tabs>
-    </div>
-  );
-};
-
-// System Status Card Component
-interface SystemStatusCardProps {
-  title: string;
-  icon: React.ReactNode;
-  status: 'active' | 'inactive' | 'error';
-  description: string;
-  color: 'blue' | 'green' | 'orange' | 'purple';
-}
-
-const SystemStatusCard: React.FC<SystemStatusCardProps> = ({
-  title,
-  icon,
-  status,
-  description,
-  color
-}) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'text-green-600';
-      case 'inactive': return 'text-gray-600';
-      case 'error': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'inactive': return <Clock className="h-4 w-4 text-gray-500" />;
-      case 'error': return <AlertTriangle className="h-4 w-4 text-red-500" />;
-      default: return <Clock className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getColorClasses = (color: string) => {
-    const colors: Record<string, string> = {
-      blue: 'border-blue-200 bg-blue-50',
-      green: 'border-green-200 bg-green-50',
-      orange: 'border-orange-200 bg-orange-50',
-      purple: 'border-purple-200 bg-purple-50'
-    };
-    return colors[color] || colors.blue;
-  };
-
-  return (
-    <Card className={getColorClasses(color)}>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className={`p-2 rounded-lg ${getColorClasses(color)}`}>
-            {icon}
-          </div>
-          {getStatusIcon(status)}
-        </div>
-        <h3 className="font-semibold mb-1">{title}</h3>
-        <p className="text-sm text-gray-600 mb-2">{description}</p>
-        <div className={`text-sm font-medium ${getStatusColor(status)}`}>
-          {status.toUpperCase()}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-// Quick Action Card Component
-interface QuickActionCardProps {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-}
-
-const QuickActionCard: React.FC<QuickActionCardProps> = ({
-  title,
-  description,
-  icon,
-  onClick
-}) => {
-  return (
-    <Card 
-      className="cursor-pointer hover:shadow-md transition-shadow border-2 hover:border-blue-300"
-      onClick={onClick}
-    >
-      <CardContent className="p-4 text-center">
-        <div className="text-blue-600 mb-3 flex justify-center">
-          {icon}
-        </div>
-        <h4 className="font-semibold mb-1">{title}</h4>
-        <p className="text-sm text-gray-600">{description}</p>
-      </CardContent>
-    </Card>
-  );
-};
-
-// Health Metric Component
-interface HealthMetricProps {
-  title: string;
-  value: string;
-  status: 'excellent' | 'good' | 'fair' | 'poor';
-  description: string;
-}
-
-const HealthMetric: React.FC<HealthMetricProps> = ({
-  title,
-  value,
-  status,
-  description
-}) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'excellent': return 'text-green-600';
-      case 'good': return 'text-blue-600';
-      case 'fair': return 'text-yellow-600';
-      case 'poor': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  };
-
-  return (
-    <div className="text-center">
-      <h4 className="font-medium text-gray-900 mb-2">{title}</h4>
-      <div className={`text-3xl font-bold mb-2 ${getStatusColor(status)}`}>
-        {value}
-      </div>
-      <p className="text-sm text-gray-600">{description}</p>
     </div>
   );
 };

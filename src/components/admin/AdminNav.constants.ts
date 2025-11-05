@@ -1,0 +1,65 @@
+import type { AdminNavItem } from "@/types/admin";
+import { LayoutDashboard, Users, Workflow, Database, Cpu, ShieldCheck } from "lucide-react";
+
+export const NAV_SECTIONS: Array<{
+  label: string;
+  items: AdminNavItem[];
+}> = [
+  {
+    label: "Overview",
+    items: [
+      {
+        label: "Dashboard",
+        description: "Summary of system status",
+        href: "/admin",
+        icon: LayoutDashboard,
+        roles: ["admin", "analyst"],
+      },
+    ],
+  },
+  {
+    label: "Management",
+    items: [
+      {
+        label: "Users & Roles",
+        description: "Manage team members",
+        href: "/admin/users",
+        icon: Users,
+        roles: ["admin"],
+      },
+      {
+        label: "Running Jobs",
+        description: "Control automations",
+        href: "/admin/jobs",
+        icon: Workflow,
+        roles: ["admin", "analyst"],
+      },
+      {
+        label: "Phase 9 Settings",
+        description: "Adjust collaborative AI",
+        href: "/admin/phase9",
+        icon: Cpu,
+        roles: ["admin", "analyst"],
+      },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      {
+        label: "Database & Content",
+        description: "Coming soon",
+        href: "/admin/database",
+        icon: Database,
+        roles: ["admin"],
+      },
+      {
+        label: "Security",
+        description: "Coming soon",
+        href: "/admin/security",
+        icon: ShieldCheck,
+        roles: ["admin"],
+      },
+    ],
+  },
+];
