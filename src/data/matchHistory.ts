@@ -159,6 +159,7 @@ export const generateMatchHistory = (teamName: string, overallRating: number): M
   return matches;
 };
 
-export const getMatchHistory = (teamName: string, overallRating: number = 75): MatchResult[] => {
-  return matchHistory[teamName] || generateMatchHistory(teamName, overallRating);
+export const getMatchHistory = ({ league, team }: { league?: string; team?: string }): Promise<MatchResult[]> => {
+  // TODO: Wire real data source from Supabase based on league/team filters
+  return Promise.resolve(team ? (matchHistory[team] || generateMatchHistory(team, 75)) : []);
 };
