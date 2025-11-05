@@ -30,6 +30,18 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Check Phase 5 feature flag
+  const phase5Enabled = Deno.env.get('PHASE5_ENABLED') === 'true';
+  if (!phase5Enabled) {
+    return new Response(
+      JSON.stringify({ 
+        error: 'Feature disabled',
+        message: 'Phase 5 pattern detection is currently disabled'
+      }),
+      { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
     // Create authenticated Supabase client
     const supabaseClient = createClient(

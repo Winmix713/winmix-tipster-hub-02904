@@ -28,6 +28,18 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  // Check Phase 9 feature flag
+  const phase9Enabled = Deno.env.get('PHASE9_ENABLED') === 'true';
+  if (!phase9Enabled) {
+    return new Response(
+      JSON.stringify({ 
+        error: 'Feature disabled',
+        message: 'Phase 9 collaborative intelligence is currently disabled'
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 503 }
+    )
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

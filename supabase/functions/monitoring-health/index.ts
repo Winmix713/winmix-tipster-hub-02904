@@ -23,6 +23,18 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Check Phase 8 feature flag
+  const phase8Enabled = Deno.env.get('PHASE8_ENABLED') === 'true';
+  if (!phase8Enabled) {
+    return new Response(
+      JSON.stringify({ 
+        error: 'Feature disabled',
+        message: 'Phase 8 monitoring & visualization is currently disabled'
+      }),
+      { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
