@@ -178,10 +178,51 @@ npm test -- Phase9
 
 ---
 
+## 📚 Operations & Documentation
+
+### Comprehensive Documentation
+- **[System Audit Report](docs/SYSTEM_AUDIT_2025-11.md)** - Complete end-to-end validation of all systems, security, performance, and deployment readiness
+- **[Configuration Reference](docs/CONFIGURATION_REFERENCE.md)** - Environment variables, Supabase setup, secrets management, and feature flags
+- **[Operations Runbook](docs/OPERATIONS_RUNBOOK.md)** - Build, deploy, troubleshoot, and maintain the platform
+- **[Authentication Guide](AUTHENTICATION.md)** - User authentication, authorization, OAuth setup, and security best practices
+
+### Quick Commands
+```bash
+# Development
+npm run dev                              # Start local dev server
+npm run build                            # Build for production
+npm run lint                             # Run ESLint
+npm test                                 # Run all tests
+
+# Database Operations
+supabase db push --project-ref <ID>     # Apply migrations
+supabase db dump > backup.sql           # Backup database
+
+# Edge Functions
+supabase functions deploy <name>        # Deploy function
+supabase functions logs <name>          # View function logs
+supabase secrets set KEY=value          # Add secret
+
+# Security
+npm audit                               # Check for vulnerabilities
+npm audit fix                           # Fix auto-fixable issues
+```
+
+### System Status (November 2025)
+- ✅ **Build Status:** Success (bundle size: 1.3 MB - optimization recommended)
+- ✅ **Database:** 14 migrations applied, 26 tables, RLS enabled on user_profiles
+- ✅ **Edge Functions:** 28 functions deployed and operational
+- ✅ **Authentication:** Fully functional with RBAC (admin, analyst, user)
+- ⚠️ **Security:** 2 moderate npm vulnerabilities (dev-only, fix available)
+- ✅ **Production Ready:** After addressing critical items in audit report
+
+---
+
 ## 🤝 Contributing
 1. Create feature branches off the integration branch (`integration/merge-phases-3-4-6-7-8-9`).
 2. Follow the established folder conventions (`components/<feature>`, `pages/<Feature>.tsx`).
 3. Use TanStack Query for data synchronization and Supabase Edge Functions for server-side orchestration.
 4. Update documentation when introducing new domain concepts or workflows.
+5. **Read the [System Audit Report](docs/SYSTEM_AUDIT_2025-11.md)** for known issues and best practices.
 
 By keeping these guidelines in mind, the integrated TipsterHub platform remains maintainable, observable, and ready for further enhancements.
