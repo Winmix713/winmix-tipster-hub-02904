@@ -596,11 +596,102 @@ serve(async (req) => {
 
 ## 5. Feature Flags
 
-### 5.1 Phase 9 Feature Toggles
+### 5.1 Phase 5-9 Backend & UI Feature Flags
 
 **Configuration:**
 ```bash
-# In .env file
+# In .env file - Control Phase 5-9 availability
+# Default: false (all features disabled)
+VITE_FEATURE_PHASE5="false"    # Advanced pattern detection
+VITE_FEATURE_PHASE6="false"    # Model evaluation & feedback loop
+VITE_FEATURE_PHASE7="false"    # Cross-league intelligence
+VITE_FEATURE_PHASE8="false"    # Monitoring & visualization
+VITE_FEATURE_PHASE9="false"    # Collaborative market intelligence
+```
+
+**Frontend Implementation:**
+```typescript
+// In src/providers/FeatureFlagsProvider.tsx
+interface FeatureFlag {
+  phase5: boolean;    // Advanced pattern detection
+  phase6: boolean;    // Model evaluation & feedback loop  
+  phase7: boolean;    // Cross-league intelligence
+  phase8: boolean;    // Monitoring & visualization
+  phase9: boolean;    // Collaborative market intelligence
+}
+
+// Usage in components
+import { usePhaseFlags } from '@/hooks/usePhaseFlags';
+
+const MyComponent = () => {
+  const { isPhase5Enabled, isPhase9Enabled } = usePhaseFlags();
+  
+  return (
+    <div>
+      {isPhase5Enabled && <PatternDetection />}
+      {isPhase9Enabled && <CollaborativeIntelligence />}
+    </div>
+  );
+};
+```
+
+**Route Protection:**
+```typescript
+// In src/components/AppRoutes.tsx
+const AppRoutes = () => {
+  const { isPhase5Enabled, isPhase9Enabled } = usePhaseFlags();
+
+  return (
+    <Routes>
+      {/* Phase-gated routes */}
+      {isPhase5Enabled && (
+        <Route path="/patterns" element={<PatternDetection />} />
+      )}
+      {isPhase9Enabled && (
+        <Route path="/phase9" element={<Phase9 />} />
+      )}
+    </Routes>
+  );
+};
+```
+
+### 5.2 Edge Function Feature Flags
+
+**Backend Implementation:**
+```typescript
+// In Edge Functions (e.g., patterns-detect/index.ts)
+serve(async (req) => {
+  // Check Phase 5 feature flag
+  const phase5Enabled = Deno.env.get('PHASE5_ENABLED') === 'true';
+  if (!phase5Enabled) {
+    return new Response(
+      JSON.stringify({ 
+        error: 'Feature disabled',
+        message: 'Phase 5 pattern detection is currently disabled'
+      }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // Continue with function logic...
+});
+```
+
+**Setting Backend Flags:**
+```bash
+# Set Phase 5-9 flags for Edge Functions
+supabase secrets set PHASE5_ENABLED=false --project-ref wclutzbojatqtxwlvtab
+supabase secrets set PHASE6_ENABLED=false --project-ref wclutzbojatqtxwlvtab
+supabase secrets set PHASE7_ENABLED=false --project-ref wclutzbojatqtxwlvtab
+supabase secrets set PHASE8_ENABLED=false --project-ref wclutzbojatqtxwlvtab
+supabase secrets set PHASE9_ENABLED=false --project-ref wclutzbojatqtxwlvtab
+```
+
+### 5.3 Phase 9 Granular Feature Toggles
+
+**Configuration:**
+```bash
+# In .env file - Phase 9 specific features
 VITE_PHASE9_FEATURE_FLAGS="collaborative_intelligence:true,market_integration:false,temporal_decay:true,self_improving:true"
 ```
 
