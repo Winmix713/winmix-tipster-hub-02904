@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          id: string
+          user_id: string
+          action: string
+          details: Json
+          created_at: string
+          ip_address: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          action: string
+          details?: Json
+          created_at?: string
+          ip_address?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          action?: string
+          details?: Json
+          created_at?: string
+          ip_address?: string | null
+        }
+        Relationships: []
+      }
+      admin_invites: {
+        Row: {
+          id: string
+          email: string
+          role: string
+          token: string
+          status: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          email: string
+          role: string
+          token: string
+          status?: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          email?: string
+          role?: string
+          token?: string
+          status?: string
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       detected_patterns: {
         Row: {
           confidence_contribution: number
@@ -152,6 +206,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      phase9_settings: {
+        Row: {
+          id: number
+          collaborative_intelligence_enabled: boolean
+          temporal_decay_enabled: boolean
+          temporal_decay_rate: number
+          freshness_check_seconds: number
+          staleness_threshold_days: number
+          market_integration_mode: string
+          market_api_key: string | null
+          cross_league_enabled: boolean
+          cross_league_league_count: number
+          cross_league_depth: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          collaborative_intelligence_enabled?: boolean
+          temporal_decay_enabled?: boolean
+          temporal_decay_rate?: number
+          freshness_check_seconds?: number
+          staleness_threshold_days?: number
+          market_integration_mode?: string
+          market_api_key?: string | null
+          cross_league_enabled?: boolean
+          cross_league_league_count?: number
+          cross_league_depth?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          collaborative_intelligence_enabled?: boolean
+          temporal_decay_enabled?: boolean
+          temporal_decay_rate?: number
+          freshness_check_seconds?: number
+          staleness_threshold_days?: number
+          market_integration_mode?: string
+          market_api_key?: string | null
+          cross_league_enabled?: boolean
+          cross_league_league_count?: number
+          cross_league_depth?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       pattern_accuracy: {
         Row: {
@@ -490,6 +589,39 @@ export type Database = {
             referencedColumns: ["id"]
           }
         ]
+      }
+      user_profiles: {
+        Row: {
+          id: string
+          email: string
+          full_name: string | null
+          role: string
+          created_at: string
+          updated_at: string
+          user_id: string | null
+          is_active: boolean | null
+        }
+        Insert: {
+          id: string
+          email: string
+          full_name?: string | null
+          role?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string | null
+          is_active?: boolean | null
+        }
+        Update: {
+          id?: string
+          email?: string
+          full_name?: string | null
+          role?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string | null
+          is_active?: boolean | null
+        }
+        Relationships: []
       }
     }
     Views: {

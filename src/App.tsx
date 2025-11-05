@@ -23,6 +23,11 @@ import CrossLeague from "./pages/CrossLeague";
 import Analytics from "./pages/Analytics";
 import Models from "./pages/Models";
 import Monitoring from "./pages/Monitoring";
+import RoleGate from "@/components/admin/RoleGate";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import UsersPage from "@/pages/admin/users/UsersPage";
+import RunningJobsPage from "@/pages/admin/jobs/RunningJobsPage";
+import Phase9SettingsPage from "@/pages/admin/phase9/Phase9SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +61,48 @@ const App = () => (
             <Route path="/crossleague" element={<AuthGate><CrossLeague /></AuthGate>} />
             <Route path="/jobs" element={<AuthGate allowedRoles={['admin', 'analyst']}><ScheduledJobs /></AuthGate>} />
             <Route path="/phase9" element={<AuthGate><Phase9 /></AuthGate>} />
+
+            {/* Admin routes */}
+            <Route
+              path="/admin"
+              element={
+                <AuthGate>
+                  <RoleGate allowedRoles={["admin", "analyst"]}>
+                    <AdminDashboard />
+                  </RoleGate>
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AuthGate>
+                  <RoleGate allowedRoles={["admin"]}>
+                    <UsersPage />
+                  </RoleGate>
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/admin/jobs"
+              element={
+                <AuthGate>
+                  <RoleGate allowedRoles={["admin", "analyst"]}>
+                    <RunningJobsPage />
+                  </RoleGate>
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/admin/phase9"
+              element={
+                <AuthGate>
+                  <RoleGate allowedRoles={["admin", "analyst"]}>
+                    <Phase9SettingsPage />
+                  </RoleGate>
+                </AuthGate>
+              }
+            />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
