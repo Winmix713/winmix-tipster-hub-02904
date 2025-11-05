@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { validateRequest, ModelPruneSchema, corsHeaders } from "../_shared/validation.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -19,7 +15,20 @@ serve(async (req) => {
       });
     }
 
-    const { threshold = 45, min_sample_size = 20 } = await req.json();
+    const body = await req.json();
+    const validation = validateRequest(ModelPruneSchema, body);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: validation.error, details: validation.details }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { threshold, min_sample_size } = validation.data;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -28,8 +37,8 @@ serve(async (req) => {
     const { data: accRows, error } = await supabase
       .from("pattern_accuracy")
       .select("template_id, total_predictions, accuracy_rate, id")
-      .gte("total_predictions", Number(min_sample_size))
-      .lt("accuracy_rate", Number(threshold));
+      .gte("total_predictions", min_sample_size)
+      .lt("accuracy_rate", threshold);
 
     if (error) {
       throw error;
@@ -58,8 +67,8 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        threshold: Number(threshold),
-        min_sample_size: Number(min_sample_size),
+        threshold,
+        min_sample_size,
         candidates: toDeactivate.length,
         deactivated: updated,
         templates: details,

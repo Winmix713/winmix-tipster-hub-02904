@@ -2,20 +2,16 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { runDetections, type DetectionResult, type DetectionFunctionKey, type GenericClient } from "../_shared/patterns.ts";
+import { corsHeaders } from "../_shared/validation.ts";
 
-// Validation schema
+// Extended validation schema for patterns-verify (similar to patterns-detect)
 const PatternsVerifySchema = z.object({
   team_name: z.string().optional(),
   team_id: z.string().uuid().optional(),
-  pattern_types: z.array(z.string()).optional(),
+  pattern_types: z.array(z.enum(["winning_streak", "home_dominance", "high_scoring_trend", "form_surge"])).optional(),
 }).refine((data) => data.team_name || data.team_id, {
   message: "Either team_name or team_id must be provided",
 });
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 interface RequestBody {
   team_name?: string;
@@ -75,11 +71,12 @@ serve(async (req) => {
       const types = url.searchParams.get("pattern_types");
       if (types) params.pattern_types = types.split(",").map((t) => t.trim()) as DetectionFunctionKey[];
     } else {
+      // Validate input
       const body = await req.json()
       const validation = PatternsVerifySchema.safeParse(body)
       if (!validation.success) {
         return new Response(
-          JSON.stringify({ error: 'Invalid input', details: validation.error }),
+          JSON.stringify({ error: 'Invalid input', details: validation.error.issues }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
