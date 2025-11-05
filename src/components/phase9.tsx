@@ -1,9 +1,5 @@
 import React from 'react';
-
-export interface Phase9DashboardProps {
-  // TODO: Add proper props interface
-  [key: string]: unknown;
-}
+import type { Phase9DashboardProps } from './phase9.types';
 
 export const Phase9Dashboard: React.FC<Phase9DashboardProps> = () => {
   return (

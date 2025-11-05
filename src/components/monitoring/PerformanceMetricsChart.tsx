@@ -1,12 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
-
-export type MetricsPoint = {
-  time: string; // ISO string
-  p50?: number;
-  p95?: number;
-  p99?: number;
-};
+import type { MetricsPoint } from "./PerformanceMetricsChart.types";
 
 interface Props {
   title?: string;
