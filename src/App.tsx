@@ -58,6 +58,48 @@ const App = () => (
             <Route path="/models" element={<AuthGate><Models /></AuthGate>} />
             <Route path="/crossleague" element={<AuthGate><CrossLeague /></AuthGate>} />
             <Route path="/phase9" element={<AuthGate><Phase9 /></AuthGate>} />
+
+            {/* Admin routes */}
+            <Route
+              path="/admin"
+              element={
+                <AuthGate>
+                  <RoleGate allowedRoles={["admin", "analyst"]}>
+                    <AdminDashboard />
+                  </RoleGate>
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AuthGate>
+                  <RoleGate allowedRoles={["admin"]}>
+                    <UsersPage />
+                  </RoleGate>
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/admin/jobs"
+              element={
+                <AuthGate>
+                  <RoleGate allowedRoles={["admin", "analyst"]}>
+                    <RunningJobsPage />
+                  </RoleGate>
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/admin/phase9"
+              element={
+                <AuthGate>
+                  <RoleGate allowedRoles={["admin", "analyst"]}>
+                    <Phase9SettingsPage />
+                  </RoleGate>
+                </AuthGate>
+              }
+            />
             
             {/* Admin routes - require specific roles */}
             <Route path="/admin/jobs" element={<AuthGate allowedRoles={['admin', 'analyst']}><ScheduledJobsPage /></AuthGate>} />
