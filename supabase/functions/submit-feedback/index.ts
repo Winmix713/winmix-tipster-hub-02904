@@ -1,20 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-
-// Validation schema
-const FeedbackSchema = z.object({
-  matchId: z.string().uuid(),
-  homeScore: z.number().int().min(0),
-  awayScore: z.number().int().min(0),
-  halfTimeHomeScore: z.number().int().min(0).optional(),
-  halfTimeAwayScore: z.number().int().min(0).optional(),
-});
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { validateRequest, FeedbackInputSchema, corsHeaders } from "../_shared/validation.ts";
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -59,10 +45,10 @@ serve(async (req) => {
 
     // Validate input
     const body = await req.json()
-    const validation = FeedbackSchema.safeParse(body)
+    const validation = validateRequest(FeedbackInputSchema, body)
     if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: 'Invalid input', details: validation.error }),
+        JSON.stringify({ error: validation.error, details: validation.details }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }

@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { validateRequest, PredictionInputSchema, corsHeaders } from "../_shared/validation.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -24,6 +20,15 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json();
+    const validation = validateRequest(PredictionInputSchema, body);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: validation.error, details: validation.details }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const {
       matchId,
       predictedOutcome,
@@ -34,25 +39,18 @@ serve(async (req) => {
       overUnderPrediction,
       predictedHomeScore,
       predictedAwayScore,
-    } = body ?? {};
-
-    if (!matchId || !predictedOutcome || typeof confidenceScore !== "number") {
-      return new Response(
-        JSON.stringify({ error: "matchId, predictedOutcome and confidenceScore are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
+    } = validation.data;
 
     const insert = {
-      match_id: matchId as string,
-      predicted_outcome: predictedOutcome as string,
-      confidence_score: confidenceScore as number,
-      css_score: (typeof cssScore === "number" ? cssScore : confidenceScore) as number,
-      prediction_factors: predictionFactors ?? {},
-      btts_prediction: typeof bttsPrediction === "boolean" ? bttsPrediction : null,
-      over_under_prediction: overUnderPrediction ?? null,
-      predicted_home_score: typeof predictedHomeScore === "number" ? predictedHomeScore : null,
-      predicted_away_score: typeof predictedAwayScore === "number" ? predictedAwayScore : null,
+      match_id: matchId,
+      predicted_outcome: predictedOutcome,
+      confidence_score: confidenceScore,
+      css_score: cssScore ?? confidenceScore,
+      prediction_factors: predictionFactors,
+      btts_prediction: bttsPrediction,
+      over_under_prediction: overUnderPrediction,
+      predicted_home_score: predictedHomeScore,
+      predicted_away_score: predictedAwayScore,
     };
 
     const { data, error } = await supabase
