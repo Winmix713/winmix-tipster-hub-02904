@@ -1,19 +1,21 @@
 project_id = "wclutzbojatqtxwlvtab"
 
-[functions.analyze-match]
-verify_jwt = false
-
-[functions.submit-feedback]
-verify_jwt = false
-
+# Public functions (read-only access)
 [functions.get-predictions]
 verify_jwt = false
 
+# Protected functions (require authentication)
+[functions.analyze-match]
+verify_jwt = true
+
+[functions.submit-feedback]
+verify_jwt = true
+
 [functions.patterns-detect]
-verify_jwt = false
+verify_jwt = true
 
 [functions.patterns-team]
-verify_jwt = false
+verify_jwt = true
 
 [functions.patterns-verify]
-verify_jwt = false
+verify_jwt = true

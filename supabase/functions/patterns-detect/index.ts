@@ -1,11 +1,22 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { runDetections, type DetectionResult, type DetectionFunctionKey, type GenericClient } from "../_shared/patterns.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Validation schema
+const PatternsDetectSchema = z.object({
+  team_name: z.string().optional(),
+  team_id: z.string().uuid().optional(),
+  league_id: z.string().uuid().optional(),
+  pattern_types: z.array(z.string()).optional(),
+}).refine((data) => data.team_name || data.team_id, {
+  message: "Either team_name or team_id must be provided",
+});
 
 interface RequestBody {
   team_name?: string;
@@ -20,6 +31,40 @@ serve(async (req) => {
   }
 
   try {
+    // Create authenticated Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    )
+
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check if user has required role (analyst or admin)
+    const { data: profile } = await supabaseClient
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || !['admin', 'analyst'].includes(profile.role)) {
+      return new Response(
+        JSON.stringify({ error: 'Insufficient permissions. Admin or Analyst role required.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -32,18 +77,19 @@ serve(async (req) => {
       const types = url.searchParams.get("pattern_types");
       if (types) params.pattern_types = types.split(",").map((t) => t.trim()) as DetectionFunctionKey[];
     } else {
-      params = await req.json();
+      const body = await req.json()
+      const validation = PatternsDetectSchema.safeParse(body)
+      if (!validation.success) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid input', details: validation.error }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      params = validation.data as RequestBody
     }
 
     let teamId = params.team_id ?? "";
     let teamName = params.team_name ?? "";
-
-    if (!teamId && !teamName) {
-      return new Response(
-        JSON.stringify({ error: "team_name or team_id is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
 
     if (!teamId) {
       const q = supabase.from("teams").select("id, name").eq("name", teamName).maybeSingle();
@@ -101,6 +147,24 @@ serve(async (req) => {
         if (!error && inserted) upserted.push(inserted);
       }
     }
+
+    // Log the action for audit
+    await supabaseClient
+      .from('admin_audit_log')
+      .insert({
+        action: 'detect_patterns',
+        resource_type: 'team',
+        resource_id: teamId,
+        details: {
+          team_name: teamName,
+          patterns_detected: upserted.length,
+          pattern_types: params.pattern_types,
+          submitted_by: user.email
+        },
+        created_by: user.id
+      });
+
+    console.log(`✅ Patterns detected for team ${teamName} (${teamId}): ${upserted.length} patterns by ${user.email}`);
 
     return new Response(
       JSON.stringify({ team_id: teamId, team_name: teamName, patterns: upserted }),

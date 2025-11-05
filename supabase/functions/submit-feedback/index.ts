@@ -1,5 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+// Validation schema
+const FeedbackSchema = z.object({
+  matchId: z.string().uuid(),
+  homeScore: z.number().int().min(0),
+  awayScore: z.number().int().min(0),
+  halfTimeHomeScore: z.number().int().min(0).optional(),
+  halfTimeAwayScore: z.number().int().min(0).optional(),
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,24 +23,61 @@ serve(async (req) => {
   }
 
   try {
-    const { matchId, homeScore, awayScore, halfTimeHomeScore, halfTimeAwayScore } = await req.json();
+    // Create authenticated Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    )
 
-    if (!matchId || homeScore === undefined || awayScore === undefined) {
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'matchId, homeScore, and awayScore are required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
+    // Check if user has required role (analyst or admin)
+    const { data: profile } = await supabaseClient
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || !['admin', 'analyst'].includes(profile.role)) {
+      return new Response(
+        JSON.stringify({ error: 'Insufficient permissions. Admin or Analyst role required.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Validate input
+    const body = await req.json()
+    const validation = FeedbackSchema.safeParse(body)
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { matchId, homeScore, awayScore, halfTimeHomeScore, halfTimeAwayScore } = validation.data
+
     // Validate halftime scores if provided
-    if (halfTimeHomeScore !== null && halfTimeHomeScore !== undefined && halfTimeHomeScore > homeScore) {
+    if (halfTimeHomeScore !== undefined && halfTimeHomeScore > homeScore) {
       return new Response(
         JSON.stringify({ error: 'Halftime home score cannot be greater than final home score' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (halfTimeAwayScore !== null && halfTimeAwayScore !== undefined && halfTimeAwayScore > awayScore) {
+    if (halfTimeAwayScore !== undefined && halfTimeAwayScore > awayScore) {
       return new Response(
         JSON.stringify({ error: 'Halftime away score cannot be greater than final away score' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -165,7 +212,22 @@ serve(async (req) => {
       }
     }
 
-    console.log(`✅ Feedback submitted for match ${matchId}: ${actualOutcome} (was correct: ${wasCorrect})`);
+    // Log the action for audit
+    await supabaseClient
+      .from('admin_audit_log')
+      .insert({
+        action: 'submit_feedback',
+        resource_type: 'match',
+        resource_id: matchId,
+        details: {
+          actual_outcome: actualOutcome,
+          was_correct: wasCorrect,
+          submitted_by: user.email
+        },
+        created_by: user.id
+      });
+
+    console.log(`✅ Feedback submitted for match ${matchId}: ${actualOutcome} (was correct: ${wasCorrect}) by ${user.email}`);
 
     return new Response(
       JSON.stringify({ 

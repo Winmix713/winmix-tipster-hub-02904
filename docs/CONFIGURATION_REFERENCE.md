@@ -410,7 +410,31 @@ supabase secrets list --project-ref wclutzbojatqtxwlvtab
 3. Enter key/value pair
 4. Click **Save**
 
-### 4.2 Common Secrets
+### 4.2 Required Database Secrets
+
+**⚠️ CRITICAL SECURITY: Never expose database credentials in frontend code!**
+
+```bash
+# Database Connection String (for Edge Functions only)
+supabase secrets set DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@db.wclutzbojatqtxwlvtab.supabase.co:5432/postgres"
+
+# Database Password (alternative approach)
+supabase secrets set POSTGRES_PASSWORD="your_actual_postgres_password"
+
+# Supabase Service Role Key (for privileged operations)
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY="your_service_role_key_here"
+
+# Supabase URL (redundant but useful)
+supabase secrets set SUPABASE_URL="https://wclutzbojatqtxwlvtab.supabase.co"
+```
+
+**🔒 Security Notes:**
+- ✅ **Safe in Edge Functions:** Accessed via `Deno.env.get()` only
+- ❌ **Never in Frontend:** No database credentials in `.env` or browser code
+- ✅ **Use Service Role:** For privileged operations (admin functions)
+- ✅ **Use Anon Key:** For user-authenticated operations
+
+### 4.3 Optional Integration Secrets
 
 ```bash
 # The Odds API Integration
@@ -424,7 +448,7 @@ supabase secrets set ML_SERVICE_TOKEN=your_ml_token_here
 supabase secrets set SENDGRID_API_KEY=your_sendgrid_key
 ```
 
-### 4.3 Accessing Secrets in Functions
+### 4.4 Accessing Secrets in Functions
 
 ```typescript
 // In any Edge Function index.ts
@@ -444,7 +468,7 @@ Deno.serve(async (req) => {
 });
 ```
 
-### 4.4 Secret Rotation
+### 4.5 Secret Rotation
 
 **Rotation Process:**
 1. Generate new secret (e.g., new API key)
@@ -464,6 +488,109 @@ Deno.serve(async (req) => {
    supabase secrets set ODDS_API_KEY=new_key_here
    supabase secrets unset ODDS_API_KEY_NEW
    ```
+
+### 4.6 Edge Functions Security
+
+**JWT Verification Configuration:**
+
+Edge Functions that require authentication must have `verify_jwt = true` in `supabase/config.toml`:
+
+```toml
+# Public functions (read-only access)
+[functions.get-predictions]
+verify_jwt = false
+
+# Protected functions (require authentication)
+[functions.analyze-match]
+verify_jwt = true
+
+[functions.submit-feedback]
+verify_jwt = true
+
+[functions.patterns-detect]
+verify_jwt = true
+
+[functions.patterns-team]
+verify_jwt = true
+
+[functions.patterns-verify]
+verify_jwt = true
+```
+
+**Authentication Pattern in Functions:**
+
+```typescript
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
+
+// Validation schema
+const RequestSchema = z.object({
+  matchId: z.string().uuid(),
+});
+
+serve(async (req) => {
+  // Create authenticated client
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    {
+      global: {
+        headers: { Authorization: req.headers.get('Authorization')! },
+      },
+    }
+  )
+
+  // Check authentication
+  const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+  if (authError || !user) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // Check role (if needed)
+  const { data: profile } = await supabaseClient
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || !['admin', 'analyst'].includes(profile.role)) {
+    return new Response(
+      JSON.stringify({ error: 'Insufficient permissions' }),
+      { status: 403, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // Validate input
+  const body = await req.json()
+  const validation = RequestSchema.safeParse(body)
+  if (!validation.success) {
+    return new Response(
+      JSON.stringify({ error: 'Invalid input', details: validation.error }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
+
+  // Use service role for privileged operations
+  const supabaseAdmin = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+
+  // Function logic...
+});
+```
+
+**Security Best Practices:**
+- ✅ **Always validate input** with Zod schemas
+- ✅ **Check authentication** for protected functions
+- ✅ **Verify roles** for admin/analyst operations
+- ✅ **Use service role** only for privileged database operations
+- ✅ **Log actions** to `admin_audit_log` table
+- ✅ **Enable JWT verification** in config.toml
+- ❌ **Never expose** service role keys to frontend
 
 ---
 
