@@ -3,7 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/providers/AuthProvider";
+import AuthGate from "@/components/AuthGate";
 import Index from "./pages/Index";
+import Login from "./pages/Auth/Login";
+import Signup from "./pages/Auth/Signup";
 import NewPredictions from "./pages/NewPredictions";
 import Teams from "./pages/Teams";
 import TeamDetail from "./pages/TeamDetail";
@@ -28,25 +32,35 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/predictions" element={<PredictionsView />} />
-          <Route path="/predictions/new" element={<NewPredictions />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/monitoring" element={<Monitoring />} />
-          <Route path="/models" element={<Models />} />
-          <Route path="/crossleague" element={<CrossLeague />} />
-          <Route path="/match/:id" element={<MatchDetail />} />
-          <Route path="/teams" element={<Teams />} />
-          <Route path="/teams/:teamName" element={<TeamDetail />} />
-          <Route path="/matches" element={<Matches />} />
-          <Route path="/leagues" element={<Leagues />} />
-          <Route path="/jobs" element={<ScheduledJobs />} />
-          <Route path="/phase9" element={<Phase9 />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Public routes - no auth required */}
+            <Route path="/" element={<AuthGate requireAuth={false}><Index /></AuthGate>} />
+            <Route path="/login" element={<AuthGate requireAuth={false}><Login /></AuthGate>} />
+            <Route path="/signup" element={<AuthGate requireAuth={false}><Signup /></AuthGate>} />
+            
+            {/* Demo routes - accessible to all (read-only for unauthenticated) */}
+            <Route path="/predictions" element={<AuthGate requireAuth={false}><PredictionsView /></AuthGate>} />
+            <Route path="/matches" element={<AuthGate requireAuth={false}><Matches /></AuthGate>} />
+            <Route path="/match/:id" element={<AuthGate requireAuth={false}><MatchDetail /></AuthGate>} />
+            <Route path="/teams" element={<AuthGate requireAuth={false}><Teams /></AuthGate>} />
+            <Route path="/teams/:teamName" element={<AuthGate requireAuth={false}><TeamDetail /></AuthGate>} />
+            <Route path="/leagues" element={<AuthGate requireAuth={false}><Leagues /></AuthGate>} />
+            
+            {/* Protected routes - require authentication */}
+            <Route path="/predictions/new" element={<AuthGate><NewPredictions /></AuthGate>} />
+            <Route path="/dashboard" element={<AuthGate><Dashboard /></AuthGate>} />
+            <Route path="/analytics" element={<AuthGate><Analytics /></AuthGate>} />
+            <Route path="/monitoring" element={<AuthGate><Monitoring /></AuthGate>} />
+            <Route path="/models" element={<AuthGate><Models /></AuthGate>} />
+            <Route path="/crossleague" element={<AuthGate><CrossLeague /></AuthGate>} />
+            <Route path="/jobs" element={<AuthGate allowedRoles={['admin', 'analyst']}><ScheduledJobs /></AuthGate>} />
+            <Route path="/phase9" element={<AuthGate><Phase9 /></AuthGate>} />
+            
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

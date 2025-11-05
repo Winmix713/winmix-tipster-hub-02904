@@ -93,6 +93,55 @@ Supplementary documentation:
 
 ---
 
+## 🔐 Authentication & Authorization
+
+The platform now includes Supabase Authentication with role-based access control (RBAC).
+
+### User Roles
+- **Admin**: Full system access including scheduled jobs and model management.
+- **Analyst**: Can create predictions, access analytics, and view all dashboards.
+- **User**: Read-only access to public predictions and match data.
+
+### Authentication Features
+- **Email/Password Sign-up & Sign-in**: Baseline authentication flow with validation.
+- **Session Management**: Automatic token refresh and persistence via localStorage.
+- **Protected Routes**: AuthGate component manages access control with configurable role requirements.
+- **Public Demo Access**: Unauthenticated users can view matches, teams, leagues, and public predictions (read-only).
+- **OAuth Support (Optional)**: Hooks for Google/GitHub authentication can be configured via Supabase dashboard.
+
+### Creating Your First User
+1. Start the development server: `npm run dev`
+2. Navigate to `http://localhost:5173/signup`
+3. Register with email and password
+4. Check your email for verification (Supabase sends confirmation emails)
+5. Sign in at `http://localhost:5173/login`
+
+The first registered user will be assigned the default 'user' role. To promote to admin:
+```sql
+-- Run in Supabase SQL Editor
+UPDATE user_profiles SET role = 'admin' WHERE email = 'your-email@example.com';
+```
+
+### Route Access Control
+| Route Category | Authentication Required | Default Roles Allowed |
+| --- | --- | --- |
+| Public (`/`, `/login`, `/signup`) | ❌ No | All visitors |
+| Demo Routes (`/predictions`, `/matches`, `/teams`, `/leagues`) | ❌ No (read-only) | All visitors |
+| Protected Dashboards (`/dashboard`, `/analytics`, `/models`, `/monitoring`, `/phase9`) | ✅ Yes | admin, analyst, user |
+| Job Management (`/jobs`) | ✅ Yes | admin, analyst |
+| Prediction Creation (`/predictions/new`) | ✅ Yes | admin, analyst, user |
+
+### Environment Variables
+Configure authentication in your `.env` file (see `.env.example`):
+```bash
+VITE_SUPABASE_URL="https://your-project-id.supabase.co"
+VITE_SUPABASE_ANON_KEY="your_anon_key_here"
+```
+
+Optional OAuth providers can be configured in the Supabase dashboard under Authentication > Providers.
+
+---
+
 ## 🛠️ Local Development
 
 ### Prerequisites
@@ -105,9 +154,13 @@ Supplementary documentation:
 npm install
 npm run dev
 ```
-- Create a `.env` using the provided example values for Supabase keys.
+- Copy `.env.example` to `.env` and configure with your Supabase credentials.
 - Start the Vite dev server at `http://localhost:5173`.
 - Ensure Supabase Edge Functions (`supabase/functions/*`) are deployed or running via `supabase functions serve` when testing job and analytics features locally.
+- Apply database migrations including the new `user_profiles` table:
+  ```bash
+  supabase db push --project-ref <YOUR_PROJECT_ID>
+  ```
 
 ### Testing
 Run targeted tests (e.g., Phase 9 suite):
