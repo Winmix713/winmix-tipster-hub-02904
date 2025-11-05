@@ -1,9 +1,10 @@
 import { format, formatDistanceToNow } from "date-fns";
-import { Play, Loader2, FileText } from "lucide-react";
+import { Play, Loader2, FileText, Edit, Trash2, MoreHorizontal } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { JobSummary } from "@/types/jobs";
 
@@ -19,6 +20,8 @@ interface JobStatusCardProps {
   onToggle: (enabled: boolean) => void;
   onRun: () => void;
   onViewLogs: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
   isToggling: boolean;
   isRunning: boolean;
 }
@@ -105,6 +108,8 @@ export default function JobStatusCard({
   onToggle,
   onRun,
   onViewLogs,
+  onEdit,
+  onDelete,
   isToggling,
   isRunning,
 }: JobStatusCardProps) {
@@ -198,12 +203,12 @@ export default function JobStatusCard({
             {isRunning ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Futás...
+                Running...
               </>
             ) : (
               <>
                 <Play className="w-4 h-4" />
-                Azonnali futtatás
+                Run Now
               </>
             )}
           </Button>
@@ -214,11 +219,36 @@ export default function JobStatusCard({
             className="inline-flex items-center gap-2"
           >
             <FileText className="w-4 h-4" />
-            Napló megnyitása
+            View Logs
           </Button>
         </div>
-        <div className="text-xs text-muted-foreground">
-          Utolsó log frissítve: {formatDateTime(job.last_log?.started_at ?? null, "Nincs adat")}
+        <div className="flex items-center gap-2">
+          {(onEdit || onDelete) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onEdit && (
+                  <DropdownMenuItem onClick={onEdit}>
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <DropdownMenuItem onClick={onDelete} className="text-destructive">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <div className="text-xs text-muted-foreground">
+            Last updated: {formatDateTime(job.last_log?.started_at ?? null, "No data")}
+          </div>
         </div>
       </CardFooter>
     </Card>
