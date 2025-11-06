@@ -1,8 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { runDetections, type DetectionResult, type DetectionFunctionKey, type GenericClient } from "../_shared/patterns.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { corsHeaders } from "../_shared/validation.ts";
+import { 
+  protectEndpoint, 
+  requireAdminOrAnalyst, 
+  createAuthErrorResponse, 
+  logAuditAction,
+  handleCorsPreflight 
+} from "../_shared/auth.ts";
 
 // Extended validation schema for patterns-detect (has additional fields)
 const PatternsDetectSchema = z.object({
@@ -23,7 +29,7 @@ interface RequestBody {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflight();
   }
 
   // Check Phase 5 feature flag
@@ -39,43 +45,18 @@ serve(async (req) => {
   }
 
   try {
-    // Create authenticated Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    )
+    // Authenticate and authorize the request
+    const authResult = await protectEndpoint(
+      req.headers.get('Authorization'),
+      requireAdminOrAnalyst
+    );
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if ('error' in authResult) {
+      return createAuthErrorResponse(authResult.error);
     }
 
-    // Check if user has required role (analyst or admin)
-    const { data: profile } = await supabaseClient
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['admin', 'analyst'].includes(profile.role)) {
-      return new Response(
-        JSON.stringify({ error: 'Insufficient permissions. Admin or Analyst role required.' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { context } = authResult;
+    const { serviceClient: supabase } = context;
 
     let params: RequestBody = {};
     if (req.method === "GET") {
@@ -158,22 +139,21 @@ serve(async (req) => {
     }
 
     // Log the action for audit
-    await supabaseClient
-      .from('admin_audit_log')
-      .insert({
-        action: 'detect_patterns',
-        resource_type: 'team',
-        resource_id: teamId,
-        details: {
-          team_name: teamName,
-          patterns_detected: upserted.length,
-          pattern_types: params.pattern_types,
-          submitted_by: user.email
-        },
-        created_by: user.id
-      });
+    await logAuditAction(
+      context.supabaseClient,
+      context.user.id,
+      'detect_patterns',
+      'team',
+      teamId,
+      {
+        team_name: teamName,
+        patterns_detected: upserted.length,
+        pattern_types: params.pattern_types
+      },
+      context.user.email
+    );
 
-    console.log(`✅ Patterns detected for team ${teamName} (${teamId}): ${upserted.length} patterns by ${user.email}`);
+    console.log(`✅ Patterns detected for team ${teamName} (${teamId}): ${upserted.length} patterns by ${context.user.email}`);
 
     return new Response(
       JSON.stringify({ team_id: teamId, team_name: teamName, patterns: upserted }),

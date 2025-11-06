@@ -1,10 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { validateRequest, ModelPruneSchema, corsHeaders } from "../_shared/validation.ts";
+import { 
+  protectEndpoint, 
+  requireAdmin, 
+  createAuthErrorResponse, 
+  logAuditAction,
+  handleCorsPreflight 
+} from "../_shared/auth.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return handleCorsPreflight();
   }
 
   try {
@@ -14,6 +20,19 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Authenticate and authorize the request (admin only)
+    const authResult = await protectEndpoint(
+      req.headers.get('Authorization'),
+      requireAdmin
+    );
+
+    if ('error' in authResult) {
+      return createAuthErrorResponse(authResult.error);
+    }
+
+    const { context } = authResult;
+    const { serviceClient: supabase } = context;
 
     const body = await req.json();
     const validation = validateRequest(ModelPruneSchema, body);
@@ -29,10 +48,6 @@ serve(async (req) => {
     }
 
     const { threshold, min_sample_size } = validation.data;
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { data: accRows, error } = await supabase
       .from("pattern_accuracy")
@@ -64,6 +79,23 @@ serve(async (req) => {
         details = (updatedTemplates as { id: string; name: string; is_active: boolean }[]) ?? [];
       }
     }
+
+    // Log the action for audit
+    await logAuditAction(
+      context.supabaseClient,
+      context.user.id,
+      'prune_models',
+      'pattern_templates',
+      'batch',
+      {
+        threshold,
+        min_sample_size,
+        candidates: toDeactivate.length,
+        deactivated: updated,
+        template_ids: templateIds
+      },
+      context.user.email
+    );
 
     return new Response(
       JSON.stringify({
