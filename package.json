@@ -9,8 +9,16 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:integration": "vitest --grep integration",
     "test:security": "./scripts/test-security.sh",
-    "test:sensitive-rls": "./scripts/verify-sensitive-rls.sh"
+    "test:sensitive-rls": "./scripts/verify-sensitive-rls.sh",
+    "test:all": "npm run test:coverage && npm run test:e2e && npm run test:security",
+    "type-check": "tsc --noEmit",
+    "seed:database": "node scripts/seed-database.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

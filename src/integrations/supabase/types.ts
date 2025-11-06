@@ -620,6 +620,45 @@ export type Database = {
         }
         Relationships: []
       }
+      system_health_metrics: {
+        Row: {
+          id: string
+          timestamp: string | null
+          db_response_time: number | null
+          api_response_time: number | null
+          error_rate: number | null
+          active_users: number | null
+          memory_usage: number | null
+          cpu_usage: number | null
+          cache_hit_rate: number | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          timestamp?: string | null
+          db_response_time?: number | null
+          api_response_time?: number | null
+          error_rate?: number | null
+          active_users?: number | null
+          memory_usage?: number | null
+          cpu_usage?: number | null
+          cache_hit_rate?: number | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          timestamp?: string | null
+          db_response_time?: number | null
+          api_response_time?: number | null
+          error_rate?: number | null
+          active_users?: number | null
+          memory_usage?: number | null
+          cpu_usage?: number | null
+          cache_hit_rate?: number | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

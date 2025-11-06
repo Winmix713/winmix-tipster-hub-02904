@@ -1,5 +1,5 @@
 import type { AdminNavItem } from "@/types/admin";
-import { LayoutDashboard, Users, Workflow, Database, Cpu, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Users, Workflow, Database, Cpu, ShieldCheck, Activity } from "lucide-react";
 
 export const NAV_SECTIONS: Array<{
   label: string;
@@ -46,6 +46,13 @@ export const NAV_SECTIONS: Array<{
   {
     label: "System",
     items: [
+      {
+        label: "Health Dashboard",
+        description: "System status & performance",
+        href: "/admin/health",
+        icon: Activity,
+        roles: ["admin", "analyst"],
+      },
       {
         label: "Database & Content",
         description: "Coming soon",
