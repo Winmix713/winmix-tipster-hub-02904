@@ -171,7 +171,7 @@ export default function Analytics() {
           </div>
 
           {cssScoreCount === 0 && (
-            <div className="text-yellow-600 p-4 bg-yellow-50 rounded mb-6">
+            <div className="p-4 rounded-lg mb-6 border border-yellow-500/20 bg-yellow-500/10 text-yellow-300">
               No CSS scores available yet. Predictions are being processed.
             </div>
           )}
