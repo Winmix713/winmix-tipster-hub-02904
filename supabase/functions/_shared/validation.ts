@@ -45,9 +45,19 @@ export const JobTriggerSchema = z.object({
   force: z.boolean().optional().default(false),
 });
 
+export const JobToggleSchema = z.object({
+  jobId: UuidSchema,
+  enabled: z.boolean(),
+});
+
 export const ModelPruneSchema = z.object({
   threshold: z.number().min(0).max(100).optional().default(45),
   min_sample_size: PositiveNumberSchema.optional().default(20),
+});
+
+export const JobLogsQuerySchema = z.object({
+  jobId: UuidSchema,
+  limit: z.number().int().min(1).max(100).optional().default(50),
 });
 
 // Pattern detection schemas

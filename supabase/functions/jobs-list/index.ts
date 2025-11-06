@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { protectEndpoint, requireAdminOrAnalyst, createAuthErrorResponse, logAuditAction, handleCorsPreflight } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,18 +8,31 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return handleCorsPreflight();
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase credentials");
+    if (req.method !== "GET") {
+      return new Response(
+        JSON.stringify({ error: "Method not allowed" }),
+        {
+          status: 405,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const authResult = await protectEndpoint(
+      req.headers.get("Authorization"),
+      requireAdminOrAnalyst
+    );
+
+    if ("error" in authResult) {
+      return createAuthErrorResponse(authResult.error);
+    }
+
+    const { context } = authResult;
+    const { serviceClient: supabase } = context;
 
     const { data: jobs, error: jobsError } = await supabase
       .from("scheduled_jobs")
@@ -85,6 +98,16 @@ serve(async (req) => {
         },
       };
     }));
+
+    await logAuditAction(
+      context.supabaseClient,
+      context.user.id,
+      "list_jobs",
+      "job",
+      "all",
+      { count: jobSummaries.length },
+      context.user.email
+    );
 
     return new Response(
       JSON.stringify({ jobs: jobSummaries }),

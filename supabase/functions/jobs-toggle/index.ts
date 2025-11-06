@@ -1,15 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { validateRequest, JobToggleSchema, corsHeaders } from "../_shared/validation.ts";
+import {
+  protectEndpoint,
+  requireAdminOrAnalyst,
+  createAuthErrorResponse,
+  logAuditAction,
+  handleCorsPreflight
+} from "../_shared/auth.ts";
 import { calculateNextRun, type ScheduledJobRecord } from "../_shared/jobs.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return handleCorsPreflight();
   }
 
   try {
@@ -23,18 +25,25 @@ serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    // Authenticate and authorize the request (admin or analyst)
+    const authResult = await protectEndpoint(
+      req.headers.get("Authorization"),
+      requireAdminOrAnalyst
+    );
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase credentials");
+    if ("error" in authResult) {
+      return createAuthErrorResponse(authResult.error);
     }
 
-    const { jobId, enabled } = await req.json();
+    const { context } = authResult;
+    const { serviceClient: supabase } = context;
 
-    if (!jobId || typeof enabled !== "boolean") {
+    const body = await req.json();
+    const validation = validateRequest(JobToggleSchema, body);
+
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ error: "jobId and enabled are required" }),
+        JSON.stringify({ error: validation.error, details: validation.details }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -42,7 +51,7 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { jobId, enabled } = validation.data;
 
     const { data: job, error: jobError } = await supabase
       .from("scheduled_jobs")
@@ -81,8 +90,24 @@ serve(async (req) => {
       throw updateError;
     }
 
+    // Log the action for audit
+    await logAuditAction(
+      context.supabaseClient,
+      context.user.id,
+      "toggle_job",
+      "job",
+      jobId,
+      {
+        job_name: job.job_name,
+        job_type: job.job_type,
+        enabled,
+        next_run_at: updatedJob?.next_run_at ?? null,
+      },
+      context.user.email
+    );
+
     return new Response(
-      JSON.stringify({ job: { ...updatedJob, config: updatedJob.config ?? {} } }),
+      JSON.stringify({ job: { ...updatedJob, config: updatedJob?.config ?? {} } }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
