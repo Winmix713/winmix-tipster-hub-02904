@@ -1,47 +1,32 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { validateRequest, FeedbackInputSchema, corsHeaders } from "../_shared/validation.ts";
+import { 
+  protectEndpoint, 
+  requireAdminOrAnalyst, 
+  createAuthErrorResponse, 
+  logAuditAction,
+  handleCorsPreflight 
+} from "../_shared/auth.ts";
 
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleCorsPreflight();
   }
 
   try {
-    // Create authenticated Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    )
+    // Authenticate and authorize the request
+    const authResult = await protectEndpoint(
+      req.headers.get('Authorization'),
+      requireAdminOrAnalyst
+    );
 
-    // Check if user is authenticated
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if ('error' in authResult) {
+      return createAuthErrorResponse(authResult.error);
     }
 
-    // Check if user has required role (analyst or admin)
-    const { data: profile } = await supabaseClient
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['admin', 'analyst'].includes(profile.role)) {
-      return new Response(
-        JSON.stringify({ error: 'Insufficient permissions. Admin or Analyst role required.' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+    const { context } = authResult;
+    const { serviceClient: supabase } = context;
 
     // Validate input
     const body = await req.json()
@@ -69,10 +54,6 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // 1. Update match with final score and halftime scores
     const { error: matchUpdateError } = await supabase
@@ -199,21 +180,20 @@ serve(async (req) => {
     }
 
     // Log the action for audit
-    await supabaseClient
-      .from('admin_audit_log')
-      .insert({
-        action: 'submit_feedback',
-        resource_type: 'match',
-        resource_id: matchId,
-        details: {
-          actual_outcome: actualOutcome,
-          was_correct: wasCorrect,
-          submitted_by: user.email
-        },
-        created_by: user.id
-      });
+    await logAuditAction(
+      context.supabaseClient,
+      context.user.id,
+      'submit_feedback',
+      'match',
+      matchId,
+      {
+        actual_outcome: actualOutcome,
+        was_correct: wasCorrect
+      },
+      context.user.email
+    );
 
-    console.log(`✅ Feedback submitted for match ${matchId}: ${actualOutcome} (was correct: ${wasCorrect}) by ${user.email}`);
+    console.log(`✅ Feedback submitted for match ${matchId}: ${actualOutcome} (was correct: ${wasCorrect}) by ${context.user.email}`);
 
     return new Response(
       JSON.stringify({ 
