@@ -505,11 +505,18 @@ supabase functions logs jobs-trigger --project-ref wclutzbojatqtxwlvtab --tail 1
 - [ ] First admin user created
 - [ ] Database backup taken
 
+**Security:**
+- [ ] JWT verification configured: `./scripts/verify-jwt-config.sh`
+- [ ] Security posture verified: `./scripts/verify-security.sh`
+- [ ] RLS policies verified: `./scripts/verify-sensitive-rls.sh`
+- [ ] Feature flags configured: `./scripts/setup-feature-flags.sh`
+
 **Testing:**
 - [ ] Staging environment tested
 - [ ] Critical user flows verified (signup, login, predictions)
 - [ ] Performance tested (Lighthouse score)
 - [ ] Security scan completed
+- [ ] JWT verification tested (see JWT_VERIFICATION_TESTING.md)
 
 ### 5.2 Deploying Frontend
 
@@ -602,16 +609,39 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
 ### 5.5 Post-Deployment Verification
 
+**Security Verification:**
+```bash
+# Verify JWT configuration
+./scripts/verify-jwt-config.sh
+
+# Verify overall security posture
+./scripts/verify-security.sh
+
+# Verify RLS policies
+./scripts/verify-sensitive-rls.sh
+```
+
 **Smoke Tests:**
 ```bash
 # Test homepage
 curl -I https://yourdomain.com/
 
-# Test API health
-curl https://wclutzbojatqtxwlvtab.supabase.co/functions/v1/monitoring-health
+# Test public function (should work without auth)
+curl https://wclutzbojatqtxwlvtab.supabase.co/functions/v1/get-predictions \
+  -H "Content-Type: application/json" \
+  -H "apikey: <ANON_KEY>" \
+  -d '{"limit": 10}'
 
-# Test authenticated endpoint
+# Test protected function WITHOUT auth (should return 401)
+curl https://wclutzbojatqtxwlvtab.supabase.co/functions/v1/analyze-match \
+  -H "Content-Type: application/json" \
+  -H "apikey: <ANON_KEY>" \
+  -d '{"matchId": "123"}'
+
+# Test protected function WITH auth (should work if authorized)
 curl https://wclutzbojatqtxwlvtab.supabase.co/functions/v1/jobs-list \
+  -H "Content-Type: application/json" \
+  -H "apikey: <ANON_KEY>" \
   -H "Authorization: Bearer <valid_user_token>"
 ```
 
