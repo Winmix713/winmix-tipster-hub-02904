@@ -1,70 +1,76 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { validateRequest, JobLogsQuerySchema, corsHeaders } from "../_shared/validation.ts";
+import { protectEndpoint, requireAdminOrAnalyst, createAuthErrorResponse, logAuditAction, handleCorsPreflight } from "../_shared/auth.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return handleCorsPreflight();
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const authResult = await protectEndpoint(
+      req.headers.get("Authorization"),
+      requireAdminOrAnalyst
+    );
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase credentials");
+    if ("error" in authResult) {
+      return createAuthErrorResponse(authResult.error);
     }
 
-    let jobId: string | null = null;
-    let limit = 50;
+    const { context } = authResult;
+    const { serviceClient: supabase } = context;
+
+    const input: { jobId: string; limit?: number } = { jobId: "", limit: 50 };
 
     if (req.method === "GET") {
       const { searchParams } = new URL(req.url);
-      jobId = searchParams.get("job_id");
+      input.jobId = searchParams.get("job_id") || searchParams.get("jobId") || "";
       const limitParam = searchParams.get("limit");
-      if (limitParam) {
-        const parsedLimit = Number(limitParam);
-        if (!Number.isNaN(parsedLimit)) {
-          limit = Math.min(100, Math.max(1, parsedLimit));
-        }
-      }
-    } else {
+      if (limitParam) input.limit = Number(limitParam);
+    } else if (req.method === "POST") {
       const body = await req.json();
-      jobId = body?.jobId ?? body?.job_id ?? null;
-      if (body?.limit !== undefined) {
-        const parsedLimit = Number(body.limit);
-        if (!Number.isNaN(parsedLimit)) {
-          limit = Math.min(100, Math.max(1, parsedLimit));
-        }
-      }
-    }
-
-    if (!jobId) {
+      input.jobId = body?.jobId ?? body?.job_id ?? "";
+      if (body?.limit !== undefined) input.limit = Number(body.limit);
+    } else {
       return new Response(
-        JSON.stringify({ error: "jobId is required" }),
+        JSON.stringify({ error: "Method not allowed" }),
         {
-          status: 400,
+          status: 405,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const validation = validateRequest(JobLogsQuerySchema, input);
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: validation.error, details: validation.details }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { jobId, limit } = validation.data;
 
     const { data: logs, error } = await supabase
       .from("job_execution_logs")
       .select("id, started_at, completed_at, status, duration_ms, records_processed, error_message, error_stack")
       .eq("job_id", jobId)
       .order("started_at", { ascending: false })
-      .limit(limit);
+      .limit(limit ?? 50);
 
     if (error) {
       throw error;
     }
+
+    await logAuditAction(
+      context.supabaseClient,
+      context.user.id,
+      "view_job_logs",
+      "job",
+      jobId,
+      { limit: limit ?? 50 },
+      context.user.email
+    );
 
     return new Response(
       JSON.stringify({ logs: logs ?? [] }),
