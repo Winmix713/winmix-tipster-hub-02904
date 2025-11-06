@@ -1,6 +1,27 @@
 import { Home, Users, Calendar as CalendarIcon, Trophy, Settings, Sparkles, Clock, Brain, LayoutDashboard, ListChecks, LineChart, FlaskConical, Network, Activity, Shield, Key } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { usePhaseFlags } from "@/hooks/usePhaseFlags";
+import React from "react";
+
+// Small helper to render a consistent nav icon link
+type IconType = React.ComponentType<{ className?: string }>
+
+const linkBase = "h-11 w-11 grid place-items-center rounded-xl transition-all";
+const activeClasses = "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40";
+const inactiveClasses = "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30";
+
+function NavIconLink({ to, Icon }: { to: string; Icon: IconType }) {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) => `${linkBase} ${isActive ? activeClasses : inactiveClasses}`}
+    >
+      {({ isActive }) => (
+        <Icon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+      )}
+    </NavLink>
+  );
+}
 
 const Sidebar = () => {
   const { isPhase5Enabled, isPhase6Enabled, isPhase7Enabled, isPhase8Enabled, isPhase9Enabled } = usePhaseFlags();
@@ -15,306 +36,52 @@ const Sidebar = () => {
             </div>
           </NavLink>
           <div className="mt-4 flex flex-col items-center gap-3">
-            <NavLink 
-              to="/" 
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <Home className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
-            <NavLink 
-              to="/dashboard" 
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <LayoutDashboard className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
-            <NavLink 
-              to="/analytics" 
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <LineChart className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
-            
+            <NavIconLink to="/" Icon={Home} />
+            <NavIconLink to="/dashboard" Icon={LayoutDashboard} />
+            <NavIconLink to="/analytics" Icon={LineChart} />
+
             {/* Phase 5: Pattern Detection */}
-            {isPhase5Enabled && (
-              <NavLink 
-                to="/patterns" 
-                className={({ isActive }) => 
-                  `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                    isActive 
-                      ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                      : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <Shield className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                )}
-              </NavLink>
-            )}
-            <NavLink 
-              to="/predictions/new" 
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <Sparkles className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
-            <NavLink 
-              to="/predictions" 
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <ListChecks className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
-            <NavLink 
-              to="/teams"
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <Users className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
-            <NavLink 
-              to="/matches" 
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <CalendarIcon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
-            <NavLink 
-              to="/jobs" 
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <Clock className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
-            
+            {isPhase5Enabled && <NavIconLink to="/patterns" Icon={Shield} />}
+
+            <NavIconLink to="/predictions/new" Icon={Sparkles} />
+            <NavIconLink to="/predictions" Icon={ListChecks} />
+            <NavIconLink to="/teams" Icon={Users} />
+            <NavIconLink to="/matches" Icon={CalendarIcon} />
+            <NavIconLink to="/jobs" Icon={Clock} />
+
             {/* Phase 6: Models */}
-            {isPhase6Enabled && (
-              <NavLink 
-                to="/models" 
-                className={({ isActive }) => 
-                  `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                    isActive 
-                      ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                      : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <FlaskConical className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                )}
-              </NavLink>
-            )}
-            
+            {isPhase6Enabled && <NavIconLink to="/models" Icon={FlaskConical} />}
+
             {/* Phase 7: Cross-League Intelligence */}
-            {isPhase7Enabled && (
-              <NavLink 
-                to="/crossleague" 
-                className={({ isActive }) => 
-                  `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                    isActive 
-                      ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                      : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <Network className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                )}
-              </NavLink>
-            )}
-            
+            {isPhase7Enabled && <NavIconLink to="/crossleague" Icon={Network} />}
+
             {/* Phase 8: Monitoring */}
-            {isPhase8Enabled && (
-              <NavLink 
-                to="/monitoring" 
-                className={({ isActive }) => 
-                  `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                    isActive 
-                      ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                      : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <Activity className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                )}
-              </NavLink>
-            )}
-            <NavLink 
-              to="/leagues" 
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <Trophy className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
-            
+            {isPhase8Enabled && <NavIconLink to="/monitoring" Icon={Activity} />}
+
+            <NavIconLink to="/leagues" Icon={Trophy} />
+
             {/* Phase 9: Collaborative Market Intelligence */}
-            {isPhase9Enabled && (
-              <NavLink 
-                to="/phase9" 
-                className={({ isActive }) => 
-                  `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                    isActive 
-                      ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                      : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <Brain className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                )}
-              </NavLink>
-            )}
-            
+            {isPhase9Enabled && <NavIconLink to="/phase9" Icon={Brain} />}
+
             {/* Admin Section */}
-            <div className="w-full h-px bg-border my-2"></div>
-            
+            <div className="w-full h-px bg-border my-2" />
+
             {(isPhase5Enabled || isPhase6Enabled || isPhase7Enabled || isPhase8Enabled) && (
-              <NavLink 
-                to="/admin/jobs" 
-                className={({ isActive }) => 
-                  `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                    isActive 
-                      ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                      : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <Clock className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                )}
-              </NavLink>
+              <NavIconLink to="/admin/jobs" Icon={Clock} />
             )}
-            
+
             {(isPhase6Enabled || isPhase8Enabled) && (
-              <NavLink 
-                to="/admin/models" 
-                className={({ isActive }) => 
-                  `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                    isActive 
-                      ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                      : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <FlaskConical className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                )}
-              </NavLink>
+              <NavIconLink to="/admin/models" Icon={FlaskConical} />
             )}
-            
+
             {isPhase8Enabled && (
               <>
-                <NavLink 
-                  to="/admin/matches" 
-                  className={({ isActive }) => 
-                    `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                      isActive 
-                        ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                        : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <CalendarIcon className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                  )}
-                </NavLink>
-                <NavLink 
-                  to="/admin/monitoring" 
-                  className={({ isActive }) => 
-                    `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                      isActive 
-                        ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                        : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <Activity className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                  )}
-                </NavLink>
+                <NavIconLink to="/admin/matches" Icon={CalendarIcon} />
+                <NavIconLink to="/admin/monitoring" Icon={Activity} />
               </>
             )}
-            <NavLink 
-              to="/admin/environment" 
-              className={({ isActive }) => 
-                `h-11 w-11 grid place-items-center rounded-xl transition-all ${
-                  isActive 
-                    ? "bg-primary/15 ring-1 ring-primary/30 hover:ring-primary/40" 
-                    : "bg-card ring-1 ring-border hover:bg-muted hover:ring-primary/30"
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <Key className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-              )}
-            </NavLink>
+
+            <NavIconLink to="/admin/environment" Icon={Key} />
           </div>
         </div>
         <div className="px-4">
