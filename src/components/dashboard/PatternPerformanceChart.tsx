@@ -71,7 +71,7 @@ export default function PatternPerformanceChart({ data }: PatternPerformanceChar
                   color: "hsl(210, 40%, 98%)",
                 }}
                 labelStyle={{ color: "hsl(210, 40%, 98%)" }}
-                formatter={(value: number, name: string, props: { payload: { total: number } }) => [
+                formatter={(value: number, _name: string, props: { payload: { total: number } }) => [
                   `${value.toFixed(1)}% (${props.payload.total} predikció)`,
                   "Pontosság",
                 ]}

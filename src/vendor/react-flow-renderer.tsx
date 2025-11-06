@@ -29,4 +29,6 @@ export default function ReactFlow({ nodes, children }: { nodes: Node[]; edges?: 
 
 export function MiniMap() { return null; }
 export function Controls() { return null; }
-export function Background() { return null; }
+export function Background({ gap, size }: { gap?: number; size?: number }) { 
+  return null; 
+}

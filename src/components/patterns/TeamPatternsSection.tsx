@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import PatternBadge, { type PatternTypeKey } from "./PatternBadge";
+import PatternBadge from "./PatternBadge";
+import type { PatternTypeKey } from "./PatternBadge.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";

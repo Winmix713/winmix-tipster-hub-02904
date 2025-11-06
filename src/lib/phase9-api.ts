@@ -1,6 +1,6 @@
 // Phase 9: Advanced Features API Services
 
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import type {
   UserPrediction,
   CrowdWisdom,
@@ -22,11 +22,7 @@ import type {
   DivergenceAnalysis
 } from '@/types/phase9';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
-
+ 
 // 9.1 Collaborative Intelligence API Services
 
 export class CollaborativeIntelligenceService {

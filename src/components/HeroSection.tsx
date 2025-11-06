@@ -1,5 +1,6 @@
 import { ChevronRight, Radar, Wifi, Sparkles, Activity, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
 import ControlPanel from "./ControlPanel";
 import stadiumImage from "@/assets/stadium-champions-league.jpg";
 import manCityLogo from "@/assets/team-logo-mancity.png";
@@ -98,10 +99,12 @@ const HeroSection = () => {
                       <ShieldCheck className="w-4 h-4" />
                       Kockázatkezelés aktív
                     </div>
-                    <a href="#match-selection" className="inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-gradient-to-r from-primary to-primary text-primary-foreground ring-1 ring-primary hover:ring-primary/80 transition text-xs font-semibold">
-                      Kezdj tippelni
-                      <ChevronRight className="w-4 h-4" />
-                    </a>
+                    <Link to="/predictions/new" className="w-auto">
+                      <Button className="inline-flex items-center gap-2 h-9 px-3">
+                        Kezdj tippelni
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

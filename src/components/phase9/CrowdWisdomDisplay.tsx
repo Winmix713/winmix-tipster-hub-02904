@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Users, AlertCircle } from 'lucide-react';
 import { CollaborativeIntelligenceService } from '@/lib/phase9-api';
-import type { CrowdWisdomDisplayProps } from '@/types/phase9';
+import type { CrowdWisdomDisplayProps, CrowdWisdom, DivergenceAnalysis } from '@/types/phase9';
 
 interface CrowdWisdomData {
   crowdWisdom?: CrowdWisdom;
@@ -25,22 +25,22 @@ export const CrowdWisdomDisplay: React.FC<CrowdWisdomDisplayProps> = ({
   const fetchData = async () => {
     try {
       setData(prev => ({ ...prev, isLoading: true, error: undefined }));
-      
-      const [crowdWisdomResult, divergenceResult] = await Promise.allSettled([
-        CollaborativeIntelligenceService.getCrowdWisdom(matchId),
-        showDivergence ? CollaborativeIntelligenceService.getDivergenceAnalysis(matchId) : Promise.resolve(null)
-      ]);
 
-      const crowdWisdom = crowdWisdomResult.status === 'fulfilled' ? crowdWisdomResult.value : undefined;
-      const divergence = divergenceResult?.status === 'fulfilled' ? divergenceResult.value : undefined;
-      const error = crowdWisdomResult.status === 'rejected' ? crowdWisdomResult.reason.message : 
-                   divergenceResult?.status === 'rejected' ? divergenceResult.reason.message : undefined;
+      const cwRes = await CollaborativeIntelligenceService.getCrowdWisdom(matchId);
+      const divRes = showDivergence
+        ? await CollaborativeIntelligenceService.analyzeDivergence(matchId)
+        : { success: true };
+
+      const crowdWisdom = cwRes.success ? (cwRes.crowdWisdom as CrowdWisdom | null) || undefined : undefined;
+      const divergence = (divRes as { success: boolean; analysis?: DivergenceAnalysis }).success
+        ? (divRes as { analysis?: DivergenceAnalysis }).analysis
+        : undefined;
 
       setData({
         crowdWisdom,
         divergence,
         isLoading: false,
-        error
+        error: cwRes.success ? undefined : cwRes.error || 'Failed to fetch crowd wisdom'
       });
     } catch (error) {
       setData({
