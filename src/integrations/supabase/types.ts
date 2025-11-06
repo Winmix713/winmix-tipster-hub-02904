@@ -595,31 +595,28 @@ export type Database = {
           id: string
           email: string
           full_name: string | null
-          role: string
-          created_at: string
-          updated_at: string
-          user_id: string | null
-          is_active: boolean | null
+          role: "admin" | "analyst" | "user" | "viewer" | "demo"
+          created_at: string | null
+          updated_at: string | null
+          is_active: boolean
         }
         Insert: {
           id: string
           email: string
           full_name?: string | null
-          role?: string
-          created_at?: string
-          updated_at?: string
-          user_id?: string | null
-          is_active?: boolean | null
+          role?: "admin" | "analyst" | "user" | "viewer" | "demo"
+          created_at?: string | null
+          updated_at?: string | null
+          is_active?: boolean
         }
         Update: {
           id?: string
           email?: string
           full_name?: string | null
-          role?: string
-          created_at?: string
-          updated_at?: string
-          user_id?: string | null
-          is_active?: boolean | null
+          role?: "admin" | "analyst" | "user" | "viewer" | "demo"
+          created_at?: string | null
+          updated_at?: string | null
+          is_active?: boolean
         }
         Relationships: []
       }
@@ -634,7 +631,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "analyst" | "user" | "viewer" | "demo"
     }
     CompositeTypes: {
       [_ in never]: never

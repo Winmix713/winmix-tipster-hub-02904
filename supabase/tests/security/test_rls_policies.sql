@@ -221,7 +221,7 @@ DECLARE
 BEGIN
     -- Test that users can see their own profile
     BEGIN
-        PERFORM 1 FROM public.user_profiles WHERE user_id = test_user_id;
+        PERFORM 1 FROM public.user_profiles WHERE id = test_user_id;
         RAISE NOTICE '✅ Users can see their own profile';
     EXCEPTION WHEN OTHERS THEN
         RAISE EXCEPTION '❌ Users cannot see their own profile';
@@ -229,7 +229,7 @@ BEGIN
     
     -- Test that users cannot see other users' profiles
     BEGIN
-        PERFORM 1 FROM public.user_profiles WHERE user_id = test_admin_id;
+        PERFORM 1 FROM public.user_profiles WHERE id = test_admin_id;
         RAISE EXCEPTION '❌ Users can see other users'' profiles';
     EXCEPTION WHEN OTHERS THEN
         RAISE NOTICE '✅ Users cannot see other users'' profiles';

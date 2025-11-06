@@ -1,24 +1,56 @@
 -- Secure RLS Baseline Migration
 -- This migration establishes proper row-level security foundations
+-- NOTE 2025-12-20: The user_profiles table definition introduced on 2025-12-05
+-- is now consolidated in migration 20251220120000_consolidate_user_profiles.sql.
+-- The guarded block below prevents re-creation of the table when it already exists.
 
--- 1. Create user_profiles table for role-based access control
-CREATE TABLE IF NOT EXISTS public.user_profiles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL CHECK (role IN ('admin', 'analyst', 'viewer', 'demo')),
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  
-  CONSTRAINT unique_user_profile UNIQUE (user_id)
-);
+DO $create_user_profiles$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+      AND table_name = 'user_profiles'
+  ) THEN
+    RAISE NOTICE 'public.user_profiles already exists - skipping legacy CREATE TABLE.';
+  ELSE
+    EXECUTE $sql$
+      CREATE TABLE public.user_profiles (
+        id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+        email TEXT NOT NULL,
+        full_name TEXT,
+        role TEXT NOT NULL DEFAULT 'user',
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW(),
+        CONSTRAINT unique_user_email UNIQUE (email)
+      );
+    $sql$;
+  END IF;
+END
+$create_user_profiles$;
 
 COMMENT ON TABLE public.user_profiles IS 'User profile information for role-based access control.';
 COMMENT ON COLUMN public.user_profiles.role IS 'User role: admin (full access), analyst (read analytics + write experiments), viewer (read-only), demo (limited read-only)';
 COMMENT ON COLUMN public.user_profiles.is_active IS 'Whether this user profile is active';
 
--- Index for fast role lookups
-CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON public.user_profiles(user_id);
+ALTER TABLE public.user_profiles
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+
+UPDATE public.user_profiles
+SET is_active = true
+WHERE is_active IS NULL;
+
+ALTER TABLE public.user_profiles
+  ALTER COLUMN is_active SET NOT NULL,
+  ALTER COLUMN is_active SET DEFAULT true;
+
+ALTER TABLE public.user_profiles
+  DROP CONSTRAINT IF EXISTS user_profiles_role_check;
+
+ALTER TABLE public.user_profiles
+  ADD CONSTRAINT user_profiles_role_check CHECK (role IN ('admin', 'analyst', 'user', 'viewer', 'demo'));
+
 CREATE INDEX IF NOT EXISTS idx_user_profiles_role ON public.user_profiles(role);
 CREATE INDEX IF NOT EXISTS idx_user_profiles_active ON public.user_profiles(is_active) WHERE is_active = true;
 
@@ -94,10 +126,10 @@ BEGIN
     RETURN 'anonymous';
   END IF;
   
-  -- Get user role from user_profiles
-  SELECT role INTO user_role 
+  -- Get user role from user_profiles (active profiles take precedence)
+  SELECT role::text INTO user_role 
   FROM public.user_profiles 
-  WHERE user_id = auth.uid() AND is_active = true;
+  WHERE id = auth.uid() AND is_active = true;
   
   -- Return role or default to 'viewer'
   RETURN COALESCE(user_role, 'viewer');
@@ -143,36 +175,46 @@ ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_profiles FORCE ROW LEVEL SECURITY;
 
 -- 7. Create policies for user_profiles table
--- Users can only see their own profile
+DROP POLICY IF EXISTS "Users can view own profile" ON public.user_profiles;
 CREATE POLICY "Users can view own profile" ON public.user_profiles
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (auth.uid() = id);
 
--- Users can update their own profile (except role)
+DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
 CREATE POLICY "Users can update own profile" ON public.user_profiles
-  FOR UPDATE USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id AND role = OLD.role);
+  FOR UPDATE USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
--- Only admins can insert new profiles
+DROP POLICY IF EXISTS "Admins can insert profiles" ON public.user_profiles;
 CREATE POLICY "Admins can insert profiles" ON public.user_profiles
   FOR INSERT WITH CHECK (public.is_admin());
 
--- Only admins can delete profiles
+DROP POLICY IF EXISTS "Admins can delete profiles" ON public.user_profiles;
 CREATE POLICY "Admins can delete profiles" ON public.user_profiles
   FOR DELETE USING (public.is_admin());
 
--- Admins can view all profiles
+DROP POLICY IF EXISTS "Admins can view all profiles" ON public.user_profiles;
 CREATE POLICY "Admins can view all profiles" ON public.user_profiles
   FOR SELECT USING (public.is_admin());
 
 -- 8. Seed default user profiles
--- Create a demo user profile for testing
-INSERT INTO public.user_profiles (user_id, role, is_active)
-VALUES 
-  ('00000000-0000-0000-0000-000000000000', 'demo', true),
-  ('00000000-0000-0000-0000-000000000001', 'viewer', true),
-  ('00000000-0000-0000-0000-000000000002', 'analyst', true),
-  ('00000000-0000-0000-0000-000000000003', 'admin', true)
-ON CONFLICT (user_id) DO NOTHING;
+WITH seed_profiles AS (
+  SELECT * FROM (VALUES
+    ('00000000-0000-0000-0000-000000000000'::uuid, 'demo'),
+    ('00000000-0000-0000-0000-000000000001'::uuid, 'viewer'),
+    ('00000000-0000-0000-0000-000000000002'::uuid, 'analyst'),
+    ('00000000-0000-0000-0000-000000000003'::uuid, 'admin')
+  ) AS s(id, role)
+)
+INSERT INTO public.user_profiles (id, email, full_name, role, is_active)
+SELECT 
+  s.id,
+  u.email,
+  COALESCE(u.raw_user_meta_data->>'full_name', u.email),
+  s.role,
+  true
+FROM seed_profiles s
+JOIN auth.users u ON u.id = s.id
+ON CONFLICT (id) DO NOTHING;
 
 -- 9. Grant minimal privileges to service roles
 -- Revoke default permissions from public
