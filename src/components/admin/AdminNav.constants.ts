@@ -54,6 +54,13 @@ export const NAV_SECTIONS: Array<{
         roles: ["admin", "analyst"],
       },
       {
+        label: "Integrations",
+        description: "GitHub, Linear, Slack, Sentry, etc.",
+        href: "/admin/integrations",
+        icon: Workflow,
+        roles: ["admin", "analyst"],
+      },
+      {
         label: "Database & Content",
         description: "Coming soon",
         href: "/admin/database",
