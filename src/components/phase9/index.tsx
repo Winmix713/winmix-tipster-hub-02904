@@ -27,13 +27,7 @@ import { SystemStatusCard } from './SystemStatusCard';
 import { QuickActionCard } from './QuickActionCard';
 import { HealthMetric } from './HealthMetric';
 
-// Import services for status checks
-import { 
-  CollaborativeIntelligenceService,
-  MarketIntegrationService,
-  TemporalDecayService,
-  SelfImprovingSystemService
-} from '@/lib/phase9-api';
+ 
 
 interface Phase9DashboardProps {
   matchId?: string; // Optional match ID for match-specific features

@@ -178,3 +178,17 @@ export interface FormState<T> {
 export type AdminRole = 'admin' | 'analyst' | 'user';
 export type EnvironmentCategory = 'general' | 'database' | 'api' | 'email' | 'security' | 'cache' | 'ai' | 'logging' | 'limits';
 export type JobType = 'data_import' | 'prediction' | 'aggregation' | 'maintenance' | 'monitoring';
+
+// Navigation & Breadcrumb Types
+export interface AdminBreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+export interface AdminNavItem {
+  label: string;
+  description?: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  roles?: AdminRole[];
+}

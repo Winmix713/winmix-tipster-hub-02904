@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/sidebar";
 import { useAdminAuth } from "@/hooks/admin/useAdminAuth";
 import { useAuth } from "@/hooks/useAuth";
-import type { AdminNavItem } from "@/types/admin";
 import { NAV_SECTIONS } from "./AdminNav.constants";
 
 const AdminNav = () => {

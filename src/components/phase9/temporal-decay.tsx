@@ -22,6 +22,7 @@ import type {
   FreshnessIndicatorProps,
   TemporalDecayConfig 
 } from '@/types/phase9';
+import { supabase } from '@/integrations/supabase/client';
 
 // Freshness Indicator Component
 export const FreshnessIndicator: React.FC<FreshnessIndicatorProps> = ({
@@ -503,7 +504,7 @@ const getDaysSinceUpdate = (lastUpdated: string): number => {
 };
 
 // Import supabase client for the indicator component
-import { createClient } from '@supabase/supabase-js';
+ 
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,

@@ -11,6 +11,8 @@ export interface ModelRegistry {
   total_predictions?: number | null;
   accuracy?: number | null;
   registered_at?: string | null;
+  is_active?: boolean;
+  description?: string;
 }
 
 export interface ModelExperiment {
