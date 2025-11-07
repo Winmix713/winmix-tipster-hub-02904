@@ -98,6 +98,7 @@ supabase/functions/   # Edge Functions powering jobs and analytics orchestration
 - **[🔐 Auth útmutató](AUTHENTICATION.md)** – Authentication & authorization implementation
 - `WinMix_TipsterHub_Phase_3-9_Components_EN.md` – deep dive into components per phase.
 - `PHASE9_IMPLEMENTATION.md` – architectural notes on the advanced collaborative intelligence layer.
+- `PAGES_OLDALAK_BEMUTATASA_HU.md` – src/pages oldalak rövid bemutatása (HU).
 
 ### Tooling & Dev Environments
 - **[🧰 Alternatív online dev eszközök (GitHub + terminál) – HU](docs/ONLINE_DEVTOOLS_ALTERNATIVES_HU.md)** – Lovable.dev helyetti megoldások, GitHub-integráció és böngészős terminál opciók
