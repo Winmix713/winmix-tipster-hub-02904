@@ -192,3 +192,82 @@ export interface AdminNavItem {
   icon: React.ComponentType<{ className?: string }>;
   roles?: AdminRole[];
 }
+
+// Admin User Management Types
+export interface AdminUser {
+  id: string;
+  email: string;
+  role: AdminRole;
+  created_at?: string | null;
+  full_name?: string | null;
+}
+
+export interface AdminUsersResponse {
+  users: AdminUser[];
+  total: number;
+}
+
+export type AdminAuditAction =
+  | "user_created"
+  | "user_deleted"
+  | "role_changed"
+  | "job_started"
+  | "job_stopped"
+  | "phase9_updated";
+
+// Admin Dashboard Card Type
+export interface AdminCategoryCard {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accentColorClass: string;
+  value: string | number | null;
+  pill?: string;
+  allowedRoles?: AdminRole[];
+}
+
+// Phase 9 Settings Types
+export interface AdminPhase9Settings {
+  id: number;
+  collaborative_intelligence_enabled: boolean;
+  temporal_decay_enabled: boolean;
+  temporal_decay_rate: number;
+  freshness_check_seconds: number;
+  staleness_threshold_days: number;
+  market_integration_mode: 'off' | 'test' | 'prod';
+  market_api_key: string | null;
+  cross_league_enabled: boolean;
+  cross_league_league_count: number;
+  cross_league_depth: 'low' | 'medium' | 'high';
+  updated_at: string;
+}
+
+export interface AdminPhase9SettingsInput {
+  collaborative_intelligence_enabled: boolean;
+  temporal_decay_enabled: boolean;
+  temporal_decay_rate: number;
+  freshness_check_seconds: number;
+  staleness_threshold_days: number;
+  market_integration_mode: 'off' | 'test' | 'prod';
+  market_api_key: string | null;
+  cross_league_enabled: boolean;
+  cross_league_league_count: number;
+  cross_league_depth: 'low' | 'medium' | 'high';
+}
+
+// Jobs Manager & Hook Options
+import type { JobSummary } from "@/types/jobs";
+export interface AdminJobsManagerResult {
+  status?: 'started' | 'stopped' | 'error' | string;
+  job?: JobSummary;
+  jobId?: string;
+  error?: string;
+  message?: string;
+}
+
+export interface UseJobsOptions {
+  refetchInterval?: number;
+  enabled?: boolean;
+}
