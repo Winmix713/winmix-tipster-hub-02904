@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { RefreshCcw, Play, Pause, Edit, Trash2, Plus, Clock, Settings, Activity, AlertTriangle, CheckCircle } from "lucide-react";
-import Sidebar from "@/components/Sidebar";
-import TopBar from "@/components/TopBar";
 import AuthGate from "@/components/AuthGate";
 import JobStatusCard from "@/components/jobs/JobStatusCard";
 import { JobLogsDialog } from "@/components/jobs/JobLogsDialog";
@@ -32,6 +30,9 @@ import type {
   CronValidation,
   JobType
 } from "@/types/admin";
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const fetchJobs = async (): Promise<JobSummary[]> => {
   const { data, error } = await supabase.functions.invoke<JobListResponse>("jobs-list");
@@ -95,6 +96,7 @@ const CRON_PRESETS: Array<{ label: string; expression: string; description: stri
 ];
 
 export default function ScheduledJobsPage() {
+  useDocumentTitle("Scheduled Jobs • WinMix TipsterHub");
   const queryClient = useQueryClient();
   const [selectedJob, setSelectedJob] = useState<JobSummary | null>(null);
   const [logsOpen, setLogsOpen] = useState(false);
@@ -334,133 +336,128 @@ export default function ScheduledJobsPage() {
 
   return (
     <AuthGate allowedRoles={['admin', 'analyst']}>
-      <div className="min-h-screen bg-black">
-        <Sidebar />
-        <TopBar />
-        <main className="lg:ml-64 pt-16 lg:pt-0">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <PageLayout>
+        <PageHeader
+          title="Scheduled Jobs"
+          description="Automated task scheduling and management"
+          actions={(
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void jobsQuery.refetch()}
+                disabled={jobsQuery.isFetching}
+                className="inline-flex items-center gap-2"
+              >
+                <RefreshCcw className={cn("w-4 h-4", jobsQuery.isFetching ? "animate-spin" : "")} />
+                Refresh
+              </Button>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Job
+              </Button>
+            </>
+          )}
+        />
+
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create New Job</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
               <div>
-                <h1 className="text-3xl font-bold text-gradient-emerald">Scheduled Jobs</h1>
-                <p className="text-muted-foreground">Automated task scheduling and management</p>
+                <Label htmlFor="job-name">Job Name</Label>
+                <Input
+                  id="job-name"
+                  value={formData.job_name}
+                  onChange={(e) => setForm((f) => ({ ...f, job_name: e.target.value }))}
+                  placeholder="daily_data_import"
+                />
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void jobsQuery.refetch()}
-                  disabled={jobsQuery.isFetching}
-                  className="inline-flex items-center gap-2"
-                >
-                  <RefreshCcw className={cn("w-4 h-4", jobsQuery.isFetching ? "animate-spin" : "")} />
-                  Refresh
-                </Button>
-                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Job
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Create New Job</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="job-name">Job Name</Label>
-                        <Input
-                          id="job-name"
-                          value={formData.job_name}
-                          onChange={(e) => setForm((f) => ({ ...f, job_name: e.target.value }))}
-                          placeholder="daily_data_import"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="job-type">Job Type</Label>
-                        <Select value={formData.job_type} onValueChange={(value) => setForm((f) => ({ ...f, job_type: value as JobType }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select job type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {JOB_TYPES.map(type => (
-                              <SelectItem key={type.value} value={type.value}>
-                                <div>
-                                  <div className="font-medium">{type.label}</div>
-                                  <div className="text-xs text-muted-foreground">{type.description}</div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="cron-schedule">Cron Schedule</Label>
-                        <Input
-                          id="cron-schedule"
-                          value={formData.cron_schedule}
-                          onChange={(e) => setForm((f) => ({ ...f, cron_schedule: e.target.value }))}
-                          placeholder="0 3 * * *"
-                        />
-                        <div className="mt-2">
-                          <Label className="text-xs text-muted-foreground">Quick Presets:</Label>
-                          <div className="grid grid-cols-2 gap-2 mt-1">
-                            {CRON_PRESETS.slice(0, 4).map((preset) => (
-                              <Button
-                                key={preset.expression}
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setForm((f) => ({ ...f, cron_schedule: preset.expression }))}
-                                className="text-xs"
-                              >
-                                {preset.label}
-                              </Button>
-                            ))}
-                          </div>
+              <div>
+                <Label htmlFor="job-type">Job Type</Label>
+                <Select value={formData.job_type} onValueChange={(value) => setForm((f) => ({ ...f, job_type: value as JobType }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select job type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JOB_TYPES.map(type => (
+                      <SelectItem key={type.value} value={type.value}>
+                        <div>
+                          <div className="font-medium">{type.label}</div>
+                          <div className="text-xs text-muted-foreground">{type.description}</div>
                         </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="config">Configuration (JSON)</Label>
-                        <Textarea
-                          id="config"
-                          value={JSON.stringify(formData.config, null, 2)}
-                          onChange={(e) => {
-                            try {
-                              const config = JSON.parse(e.target.value);
-                              setForm((f) => ({ ...f, config }));
-                            } catch {
-                              // Invalid JSON, don't update
-                            }
-                          }}
-                          placeholder='{"source": "api", "batch_size": 100}'
-                          rows={4}
-                        />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="enabled"
-                          checked={formData.enabled}
-                          onCheckedChange={(checked) => setForm((f) => ({ ...f, enabled: checked }))}
-                        />
-                        <Label htmlFor="enabled">Enabled</Label>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button 
-                        onClick={() => createMutation.mutate(formData)}
-                        disabled={createMutation.isPending || !formData.job_name || !formData.cron_schedule}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="cron-schedule">Cron Schedule</Label>
+                <Input
+                  id="cron-schedule"
+                  value={formData.cron_schedule}
+                  onChange={(e) => setForm((f) => ({ ...f, cron_schedule: e.target.value }))}
+                  placeholder="0 3 * * *"
+                />
+                <div className="mt-2">
+                  <Label className="text-xs text-muted-foreground">Quick Presets:</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-1">
+                    {CRON_PRESETS.slice(0, 4).map((preset) => (
+                      <Button
+                        key={preset.expression}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setForm((f) => ({ ...f, cron_schedule: preset.expression }))}
+                        className="text-xs"
                       >
-                        Create
+                        {preset.label}
                       </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="config">Configuration (JSON)</Label>
+                <Textarea
+                  id="config"
+                  value={JSON.stringify(formData.config, null, 2)}
+                  onChange={(e) => {
+                    try {
+                      const config = JSON.parse(e.target.value);
+                      setForm((f) => ({ ...f, config }));
+                    } catch {
+                      // Invalid JSON, don't update
+                    }
+                  }}
+                  placeholder='{"source": "api", "batch_size": 100}'
+                  rows={4}
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="enabled"
+                  checked={formData.enabled}
+                  onCheckedChange={(checked) => setForm((f) => ({ ...f, enabled: checked }))}
+                />
+                <Label htmlFor="enabled">Enabled</Label>
               </div>
             </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => createMutation.mutate(formData)}
+                disabled={createMutation.isPending || !formData.job_name || !formData.cron_schedule}
+              >
+                Create
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
@@ -673,9 +670,7 @@ export default function ScheduledJobsPage() {
               isLoading={logsQuery.isLoading}
               onRefresh={() => void logsQuery.refetch()}
             />
-          </div>
-        </main>
-      </div>
+      </PageLayout>
     </AuthGate>
   );
 }

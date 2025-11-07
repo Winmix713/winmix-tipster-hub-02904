@@ -5,9 +5,11 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const Index = () => {
   const navigate = useNavigate();
+  useDocumentTitle("WinMix TipsterHub");
 
   return (
     <div className="min-h-screen">

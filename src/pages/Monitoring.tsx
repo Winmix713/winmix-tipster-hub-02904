@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import Sidebar from "@/components/Sidebar";
-import TopBar from "@/components/TopBar";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +12,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { AlertsResponse, ComputationGraphResponse, HealthSummaryResponse, MetricsResponse, PerformanceMetricRow } from "@/types/monitoring";
 import { RefreshCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const useHealth = () =>
   useQuery<HealthSummaryResponse>({
@@ -63,6 +64,7 @@ const useMetrics = (component?: string | null) =>
   });
 
 export default function Monitoring() {
+  useDocumentTitle("Monitoring • WinMix TipsterHub");
   const healthQuery = useHealth();
   const graphQuery = useGraph();
   const alertsQuery = useAlerts();
@@ -94,32 +96,28 @@ export default function Monitoring() {
   const isLoading = healthQuery.isLoading || graphQuery.isLoading;
 
   return (
-    <div className="min-h-screen bg-black">
-      <Sidebar />
-      <TopBar />
-      <main className="lg:ml-64 pt-16 lg:pt-0">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gradient-emerald">Monitoring</h1>
-              <p className="text-muted-foreground">System health, performance metrics and computation graph.</p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                void healthQuery.refetch();
-                void graphQuery.refetch();
-                void alertsQuery.refetch();
-                void metricsQuery.refetch();
-              }}
-              disabled={isLoading}
-              className="inline-flex items-center gap-2"
-            >
-              <RefreshCcw className={cn("w-4 h-4", isLoading ? "animate-spin" : "")} />
-              Frissítés
-            </Button>
-          </div>
+    <PageLayout>
+      <PageHeader
+        title="Monitoring"
+        description="System health, performance metrics and computation graph."
+        actions={(
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void healthQuery.refetch();
+              void graphQuery.refetch();
+              void alertsQuery.refetch();
+              void metricsQuery.refetch();
+            }}
+            disabled={isLoading}
+            className="inline-flex items-center gap-2"
+          >
+            <RefreshCcw className={cn("w-4 h-4", isLoading ? "animate-spin" : "")} />
+            Frissítés
+          </Button>
+        )}
+      />
 
           {(healthQuery.error || graphQuery.error || alertsQuery.error || metricsQuery.error) && (
             <Alert variant="destructive" className="mb-6">
@@ -197,8 +195,6 @@ export default function Monitoring() {
               </Card>
             </div>
           )}
-        </div>
-      </main>
-    </div>
+    </PageLayout>
   );
 }
