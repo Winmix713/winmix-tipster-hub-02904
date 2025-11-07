@@ -1,8 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCcw, Play, Pause, Trash2, Edit, Plus, Settings, Activity, Zap, Shield } from "lucide-react";
-import Sidebar from "@/components/Sidebar";
-import TopBar from "@/components/TopBar";
 import AuthGate from "@/components/AuthGate";
 import ModelCard from "@/components/models/ModelCard";
 import { Button } from "@/components/ui/button";
@@ -22,6 +20,9 @@ import type { ModelAction } from "@/types/admin";
 import { toast } from "sonner";
 import { Pie, PieChart, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 function useExperiments() {
   return useQuery<ModelExperiment[]>({
@@ -38,6 +39,7 @@ function useExperiments() {
 }
 
 export default function ModelsPage() {
+  useDocumentTitle("Models • WinMix TipsterHub");
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -369,103 +371,98 @@ export default function ModelsPage() {
 
   return (
     <AuthGate allowedRoles={['admin', 'analyst']}>
-      <div className="min-h-screen bg-black">
-        <Sidebar />
-        <TopBar />
-        <main className="lg:ml-64 pt-16 lg:pt-0">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-gradient-emerald">Model Management</h1>
-                <p className="text-muted-foreground">AI models with champion/challenger framework and A/B testing</p>
+      <PageLayout>
+        <PageHeader
+          title="Model Management"
+          description="AI models with champion/challenger framework and A/B testing"
+          actions={(
+            <>
+              <Button variant="outline" onClick={testSelection}>
+                <RefreshCcw className="w-4 h-4 mr-2" />
+                Test Selection
+              </Button>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Model
+              </Button>
+            </>
+          )}
+        />
+
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Register New Model</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="model-name">Model Name</Label>
+                  <Input value={form.model_name} onChange={(e) => setForm((f) => ({ ...f, model_name: e.target.value }))} placeholder="HeuristicEngine" />
+                </div>
+                <div>
+                  <Label htmlFor="model-version">Version</Label>
+                  <Input value={form.model_version} onChange={(e) => setForm((f) => ({ ...f, model_version: e.target.value }))} placeholder="1.0.0" />
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={testSelection}>
-                  <RefreshCcw className="w-4 h-4 mr-2" />
-                  Test Selection
-                </Button>
-                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Model
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Register New Model</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="model-name">Model Name</Label>
-                          <Input value={form.model_name} onChange={(e) => setForm((f) => ({ ...f, model_name: e.target.value }))} placeholder="HeuristicEngine" />
-                        </div>
-                        <div>
-                          <Label htmlFor="model-version">Version</Label>
-                          <Input value={form.model_version} onChange={(e) => setForm((f) => ({ ...f, model_version: e.target.value }))} placeholder="1.0.0" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="model-type">Type</Label>
-                          <Select value={form.model_type} onValueChange={(v) => setForm((f) => ({ ...f, model_type: v as ModelRegistry["model_type"] }))}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="champion">Champion</SelectItem>
-                              <SelectItem value="challenger">Challenger</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="traffic-allocation">Traffic Allocation (%)</Label>
-                          <Input 
-                            type="number" 
-                            min="0" 
-                            max="100" 
-                            value={form.traffic_allocation} 
-                            onChange={(e) => setForm((f) => ({ ...f, traffic_allocation: parseInt(e.target.value) || 10 }))} 
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="algorithm">Algorithm</Label>
-                        <Input value={form.algorithm} onChange={(e) => setForm((f) => ({ ...f, algorithm: e.target.value }))} placeholder="GradientBoostedHeuristics" />
-                      </div>
-                      <div>
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Model description and purpose..." />
-                      </div>
-                      <div>
-                        <Label htmlFor="hyperparameters">Hyperparameters (JSON)</Label>
-                        <Textarea value={form.hyperparameters} onChange={(e) => setForm((f) => ({ ...f, hyperparameters: e.target.value }))} placeholder='{"learning_rate": 0.1}' rows={4} />
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          id="is-active"
-                          checked={form.is_active}
-                          onCheckedChange={(checked) => setForm((f) => ({ ...f, is_active: checked }))}
-                        />
-                        <Label htmlFor="is-active">Active</Label>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button 
-                        onClick={() => registerMutation.mutate()} 
-                        disabled={registerMutation.isPending || !form.model_name || !form.model_version}
-                      >
-                        Register
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="model-type">Type</Label>
+                  <Select value={form.model_type} onValueChange={(v) => setForm((f) => ({ ...f, model_type: v as ModelRegistry["model_type"] }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="champion">Champion</SelectItem>
+                      <SelectItem value="challenger">Challenger</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="traffic-allocation">Traffic Allocation (%)</Label>
+                  <Input 
+                    type="number" 
+                    min="0" 
+                    max="100" 
+                    value={form.traffic_allocation} 
+                    onChange={(e) => setForm((f) => ({ ...f, traffic_allocation: parseInt(e.target.value) || 10 }))} 
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="algorithm">Algorithm</Label>
+                <Input value={form.algorithm} onChange={(e) => setForm((f) => ({ ...f, algorithm: e.target.value }))} placeholder="GradientBoostedHeuristics" />
+              </div>
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} placeholder="Model description and purpose..." />
+              </div>
+              <div>
+                <Label htmlFor="hyperparameters">Hyperparameters (JSON)</Label>
+                <Textarea value={form.hyperparameters} onChange={(e) => setForm((f) => ({ ...f, hyperparameters: e.target.value }))} placeholder='{"learning_rate": 0.1}' rows={4} />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="is-active"
+                  checked={form.is_active}
+                  onCheckedChange={(checked) => setForm((f) => ({ ...f, is_active: checked }))}
+                />
+                <Label htmlFor="is-active">Active</Label>
               </div>
             </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => registerMutation.mutate()} 
+                disabled={registerMutation.isPending || !form.model_name || !form.model_version}
+              >
+                Register
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
             {modelsQuery.error && (
               <Alert variant="destructive" className="mb-6">
@@ -678,9 +675,7 @@ export default function ModelsPage() {
                 </Card>
               </div>
             </div>
-          </div>
-        </main>
-      </div>
+      </PageLayout>
     </AuthGate>
   );
 }

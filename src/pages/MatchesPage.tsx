@@ -1,8 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Download, Upload, Edit, Trash2, Calendar, Trophy, Users, FileText, Search, Filter } from "lucide-react";
-import Sidebar from "@/components/Sidebar";
-import TopBar from "@/components/TopBar";
 import AuthGate from "@/components/AuthGate";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +15,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { MatchFormData, CSVImportResult } from "@/types/admin";
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 // Types for matches
 interface Match {
@@ -140,6 +141,7 @@ const importFromCSV = async (csvContent: string): Promise<CSVImportResult> => {
 };
 
 export default function MatchesPage() {
+  useDocumentTitle("Matches • WinMix TipsterHub");
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -338,176 +340,165 @@ export default function MatchesPage() {
 
   return (
     <AuthGate allowedRoles={['admin', 'analyst']}>
-      <div className="min-h-screen bg-black">
-        <Sidebar />
-        <TopBar />
-        <main className="lg:ml-64 pt-16 lg:pt-0">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <PageLayout>
+        <PageHeader
+          title="Matches Management"
+          description="Manage matches and import data from CSV files"
+          actions={(
+            <>
+              <Button variant="outline" onClick={exportToCSV}>
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
+              <Button variant="outline" onClick={() => setIsImportDialogOpen(true)}>
+                <Upload className="w-4 h-4 mr-2" />
+                Import CSV
+              </Button>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Match
+              </Button>
+            </>
+          )}
+        />
+
+        <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Import Matches from CSV</DialogTitle>
+              <DialogDescription>
+                Upload a CSV file with match data. Expected columns: League, Home Team, Away Team, Match Date, Venue, Status.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
               <div>
-                <h1 className="text-3xl font-bold text-gradient-emerald">Matches Management</h1>
-                <p className="text-muted-foreground">Manage matches and import data from CSV files</p>
+                <Label htmlFor="csv-file">CSV File</Label>
+                <Input id="csv-file" type="file" accept=".csv" onChange={handleCSVFileUpload} />
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={exportToCSV}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </Button>
-                <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Import CSV
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Import Matches from CSV</DialogTitle>
-                      <DialogDescription>
-                        Upload a CSV file with match data. Expected columns: League, Home Team, Away Team, Match Date, Venue, Status.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="csv-file">CSV File</Label>
-                        <Input
-                          id="csv-file"
-                          type="file"
-                          accept=".csv"
-                          onChange={handleCSVFileUpload}
-                        />
-                      </div>
-                      {csvFileContent && (
-                        <div>
-                          <Label htmlFor="csv-preview">Preview</Label>
-                          <Textarea
-                            id="csv-preview"
-                            value={csvFileContent}
-                            onChange={(e) => setCsvFileContent(e.target.value)}
-                            rows={10}
-                            placeholder="CSV content will appear here..."
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button 
-                        onClick={() => importMutation.mutate(csvFileContent)}
-                        disabled={importMutation.isPending || !csvFileContent.trim()}
-                      >
-                        Import
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Match
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add New Match</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="league">League</Label>
-                        <Select value={formData.league_id} onValueChange={(value) => setFormData(prev => ({ ...prev, league_id: value }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select league" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {leaguesQuery.data?.map(league => (
-                              <SelectItem key={league.id} value={league.id}>
-                                {league.name} ({league.country})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="home-team">Home Team</Label>
-                        <Select value={formData.home_team_id} onValueChange={(value) => setFormData(prev => ({ ...prev, home_team_id: value }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select home team" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teamsQuery.data?.filter(team => team.id !== formData.away_team_id).map(team => (
-                              <SelectItem key={team.id} value={team.id}>
-                                {team.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="away-team">Away Team</Label>
-                        <Select value={formData.away_team_id} onValueChange={(value) => setFormData(prev => ({ ...prev, away_team_id: value }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select away team" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teamsQuery.data?.filter(team => team.id !== formData.home_team_id).map(team => (
-                              <SelectItem key={team.id} value={team.id}>
-                                {team.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="match-date">Match Date</Label>
-                        <Input
-                          id="match-date"
-                          type="datetime-local"
-                          value={formData.match_date}
-                          onChange={(e) => setFormData(prev => ({ ...prev, match_date: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="venue">Venue</Label>
-                        <Input
-                          id="venue"
-                          value={formData.venue}
-                          onChange={(e) => setFormData(prev => ({ ...prev, venue: e.target.value }))}
-                          placeholder="Stadium name"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="status">Status</Label>
-                        <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="scheduled">Scheduled</SelectItem>
-                            <SelectItem value="live">Live</SelectItem>
-                            <SelectItem value="completed">Completed</SelectItem>
-                            <SelectItem value="cancelled">Cancelled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button 
-                        onClick={() => createMutation.mutate(formData)}
-                        disabled={createMutation.isPending || !formData.league_id || !formData.home_team_id || !formData.away_team_id || !formData.match_date}
-                      >
-                        Create
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+              {csvFileContent && (
+                <div>
+                  <Label htmlFor="csv-preview">Preview</Label>
+                  <Textarea
+                    id="csv-preview"
+                    value={csvFileContent}
+                    onChange={(e) => setCsvFileContent(e.target.value)}
+                    rows={10}
+                    placeholder="CSV content will appear here..."
+                  />
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => importMutation.mutate(csvFileContent)}
+                disabled={importMutation.isPending || !csvFileContent.trim()}
+              >
+                Import
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Match</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="league">League</Label>
+                <Select value={formData.league_id} onValueChange={(value) => setFormData(prev => ({ ...prev, league_id: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select league" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {leaguesQuery.data?.map(league => (
+                      <SelectItem key={league.id} value={league.id}>
+                        {league.name} ({league.country})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="home-team">Home Team</Label>
+                <Select value={formData.home_team_id} onValueChange={(value) => setFormData(prev => ({ ...prev, home_team_id: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select home team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teamsQuery.data?.filter(team => team.id !== formData.away_team_id).map(team => (
+                      <SelectItem key={team.id} value={team.id}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="away-team">Away Team</Label>
+                <Select value={formData.away_team_id} onValueChange={(value) => setFormData(prev => ({ ...prev, away_team_id: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select away team" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teamsQuery.data?.filter(team => team.id !== formData.home_team_id).map(team => (
+                      <SelectItem key={team.id} value={team.id}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="match-date">Match Date</Label>
+                <Input
+                  id="match-date"
+                  type="datetime-local"
+                  value={formData.match_date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, match_date: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="venue">Venue</Label>
+                <Input
+                  id="venue"
+                  value={formData.venue}
+                  onChange={(e) => setFormData(prev => ({ ...prev, venue: e.target.value }))}
+                  placeholder="Stadium name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select value={formData.status} onValueChange={(value: NonNullable<MatchFormData["status"]>) => setFormData(prev => ({ ...prev, status: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="live">Live</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => createMutation.mutate(formData)}
+                disabled={createMutation.isPending || !formData.league_id || !formData.home_team_id || !formData.away_team_id || !formData.match_date}
+              >
+                Create
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
@@ -757,7 +748,7 @@ export default function MatchesPage() {
                   </div>
                   <div>
                     <Label htmlFor="edit-status">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as any }))}>
+                    <Select value={formData.status} onValueChange={(value: NonNullable<MatchFormData["status"]>) => setFormData(prev => ({ ...prev, status: value }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -786,9 +777,7 @@ export default function MatchesPage() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          </div>
-        </main>
-      </div>
+      </PageLayout>
     </AuthGate>
   );
 }

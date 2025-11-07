@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import Sidebar from "@/components/Sidebar";
-import TopBar from "@/components/TopBar";
 import { supabase } from "@/integrations/supabase/client";
 import ModelPerformanceChart, { PerformancePoint } from "@/components/ModelPerformanceChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import PageLayout from "@/components/layout/PageLayout";
+import PageHeader from "@/components/layout/PageHeader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 interface PredictionRow {
   created_at: string;
@@ -23,6 +24,7 @@ function formatDate(dateIso: string): string {
 }
 
 export default function Analytics() {
+  useDocumentTitle("Analytics • WinMix TipsterHub");
   const [loading, setLoading] = useState(true);
   const [points, setPoints] = useState<PerformancePoint[]>([]);
   const [summary, setSummary] = useState({ total: 0, accuracy: 0, avgCalibrationError: 0 });
@@ -110,75 +112,60 @@ export default function Analytics() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black">
-        <Sidebar />
-        <TopBar />
-        <main className="lg:ml-64 pt-16 lg:pt-0">
-          <div className="container mx-auto px-4 py-8">
-            <div className="mb-8">
-              <Skeleton className="h-12 w-64 mb-2" />
-              <Skeleton className="h-4 w-96" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-28" />
-              ))}
-            </div>
-            <Skeleton className="h-96" />
-          </div>
-        </main>
-      </div>
+      <PageLayout>
+        <div className="mb-8">
+          <Skeleton className="h-12 w-64 mb-2" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
+        </div>
+        <Skeleton className="h-96" />
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black">
-      <Sidebar />
-      <TopBar />
-      <main className="lg:ml-64 pt-16 lg:pt-0">
-        <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gradient-emerald mb-2">Analytics</h1>
-            <p className="text-muted-foreground">Hosszú távú modell teljesítmény, kalibráció, összehasonlítás</p>
-          </div>
+    <PageLayout>
+      <PageHeader title="Analytics" description="Hosszú távú modell teljesítmény, kalibráció, összehasonlítás" />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="glass-card border-border">
-              <CardHeader>
-                <CardTitle>Összes értékelt predikció</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{summary.total}</div>
-              </CardContent>
-            </Card>
-            <Card className="glass-card border-border">
-              <CardHeader>
-                <CardTitle>Összpontosság</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{summary.accuracy}%</div>
-              </CardContent>
-            </Card>
-            <Card className="glass-card border-border">
-              <CardHeader>
-                <CardTitle>Átlagos kalibrációs hiba</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{summary.avgCalibrationError}</div>
-                <p className="text-muted-foreground text-xs">|p - y| átlag, 0 a jobb</p>
-              </CardContent>
-            </Card>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card className="glass-card border-border">
+          <CardHeader>
+            <CardTitle>Összes értékelt predikció</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{summary.total}</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card border-border">
+          <CardHeader>
+            <CardTitle>Összpontosság</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{summary.accuracy}%</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card border-border">
+          <CardHeader>
+            <CardTitle>Átlagos kalibrációs hiba</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{summary.avgCalibrationError}</div>
+            <p className="text-muted-foreground text-xs">|p - y| átlag, 0 a jobb</p>
+          </CardContent>
+        </Card>
+      </div>
 
-          {cssScoreCount === 0 && (
-            <div className="p-4 rounded-lg mb-6 border border-yellow-500/20 bg-yellow-500/10 text-yellow-300">
-              No CSS scores available yet. Predictions are being processed.
-            </div>
-          )}
-
-          <ModelPerformanceChart data={points} />
+      {cssScoreCount === 0 && (
+        <div className="p-4 rounded-lg mb-6 border border-yellow-500/20 bg-yellow-500/10 text-yellow-300">
+          No CSS scores available yet. Predictions are being processed.
         </div>
-      </main>
-    </div>
+      )}
+
+      <ModelPerformanceChart data={points} />
+    </PageLayout>
   );
 }
