@@ -1,0 +1,43 @@
+name: CI – Build, Test & Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Lint
+        run: npm run lint
+        # ha nincs lint script, akkor ezt a lépést kihagyjuk vagy kommenteljük
+
+      - name: Run Tests
+        run: npm test
+        # feltételezve, hogy "npm test" lefut a vitest tesztek
+
+      - name: Build for production
+        run: npm run build
+
+      - name: Upload build artifacts (optional)
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-build
+          path: dist/
