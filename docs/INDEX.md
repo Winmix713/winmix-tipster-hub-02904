@@ -49,6 +49,7 @@ All project documentation is consolidated under this docs/ directory. The follow
 - [DATA_MANAGEMENT.md](./DATA_MANAGEMENT.md)
 - [TESTING_GUIDE.md](./TESTING_GUIDE.md)
 - [SUPABASE_TO_NEON_MIGRATION.md](./SUPABASE_TO_NEON_MIGRATION.md)
+- [WINMIX_AURA_DESIGN_PROMPT_HU.md](./WINMIX_AURA_DESIGN_PROMPT_HU.md)
 
 Images and assets:
 - [images/](./images/)
