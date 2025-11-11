@@ -100,6 +100,9 @@ supabase/functions/   # Edge Functions powering jobs and analytics orchestration
 - `PHASE9_IMPLEMENTATION.md` – architectural notes on the advanced collaborative intelligence layer.
 - `PAGES_OLDALAK_BEMUTATASA_HU.md` – src/pages oldalak rövid bemutatása (HU).
 
+### Reviews & Roadmaps
+- **[🧭 Projekt állapotértékelés és roadmap (HU)](docs/PROJEKT_ERTEKELES_ES_ROADMAP_HU.md)** – Reális értékelés a teljes repo alapján, fókusz: Streak Analysis és Transition Matrix
+
 ### Tooling & Dev Environments
 - **[🧰 Alternatív online dev eszközök (GitHub + terminál) – HU](docs/ONLINE_DEVTOOLS_ALTERNATIVES_HU.md)** – Lovable.dev helyetti megoldások, GitHub-integráció és böngészős terminál opciók
 
