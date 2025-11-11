@@ -89,16 +89,18 @@ supabase/functions/   # Edge Functions powering jobs and analytics orchestration
 
 ## 📚 Documentation
 
+- Full index: [docs/INDEX.md](docs/INDEX.md)
+
 ### User Guides
 - **[📖 Teljes Felhasználói Útmutató](docs/USER_GUIDE.md)** – Comprehensive end-to-end user guide (Hungarian primary, English summaries)
 - **[⚡ Gyors Kezdés](docs/QUICK_START.md)** – 10-15 minute quick start guide (Hungarian)
 - **[👥 Szerepkörök és Jogosultságok](docs/ROLE_PERMISSIONS.md)** – Role-based access control matrix (Hungarian)
 
 ### Technical Documentation
-- **[🔐 Auth útmutató](AUTHENTICATION.md)** – Authentication & authorization implementation
-- `WinMix_TipsterHub_Phase_3-9_Components_EN.md` – deep dive into components per phase.
-- `PHASE9_IMPLEMENTATION.md` – architectural notes on the advanced collaborative intelligence layer.
-- `PAGES_OLDALAK_BEMUTATASA_HU.md` – src/pages oldalak rövid bemutatása (HU).
+- [🔐 Auth útmutató](docs/AUTHENTICATION.md) – Authentication & authorization implementation
+- [WinMix_TipsterHub_Phase_3-9_Components_EN.md](docs/WinMix_TipsterHub_Phase_3-9_Components_EN.md) – deep dive into components per phase.
+- [PHASE9_IMPLEMENTATION.md](docs/PHASE9_IMPLEMENTATION.md) – architectural notes on the advanced collaborative intelligence layer.
+- [PAGES_OLDALAK_BEMUTATASA_HU.md](docs/PAGES_OLDALAK_BEMUTATASA_HU.md) – src/pages oldalak rövid bemutatása (HU).
 
 ### Reviews & Roadmaps
 - **[🧭 Projekt állapotértékelés és roadmap (HU)](docs/PROJEKT_ERTEKELES_ES_ROADMAP_HU.md)** – Reális értékelés a teljes repo alapján, fókusz: Streak Analysis és Transition Matrix
@@ -206,7 +208,7 @@ Coverage summaries are printed to the console and detailed HTML/LCOV reports lan
 - **[System Audit Report](docs/SYSTEM_AUDIT_2025-11.md)** - Complete end-to-end validation of all systems, security, performance, and deployment readiness
 - **[Configuration Reference](docs/CONFIGURATION_REFERENCE.md)** - Environment variables, Supabase setup, secrets management, and feature flags
 - **[Operations Runbook](docs/OPERATIONS_RUNBOOK.md)** - Build, deploy, troubleshoot, and maintain the platform
-- **[Authentication Guide](AUTHENTICATION.md)** - User authentication, authorization, OAuth setup, and security best practices
+- **[Authentication Guide](docs/AUTHENTICATION.md)** - User authentication, authorization, OAuth setup, and security best practices
 
 ### Quick Commands
 ```bash
