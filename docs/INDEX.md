@@ -44,6 +44,11 @@ All project documentation is consolidated under this docs/ directory. The follow
 - [WinMix_TipsterHub_Phase_3-9_Components_EN.md](./WinMix_TipsterHub_Phase_3-9_Components_EN.md)
 - [ZOD_VALIDATION_IMPLEMENTATION.md](./ZOD_VALIDATION_IMPLEMENTATION.md)
 - [docs-fejlesztesi-lepesek-hu.md](./docs-fejlesztesi-lepesek-hu.md)
+- [ANALYTICS_FEATURES.md](./ANALYTICS_FEATURES.md)
+- [API_REFERENCE.md](./API_REFERENCE.md)
+- [DATA_MANAGEMENT.md](./DATA_MANAGEMENT.md)
+- [TESTING_GUIDE.md](./TESTING_GUIDE.md)
+- [SUPABASE_TO_NEON_MIGRATION.md](./SUPABASE_TO_NEON_MIGRATION.md)
 
 Images and assets:
 - [images/](./images/)
