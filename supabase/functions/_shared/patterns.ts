@@ -289,6 +289,69 @@ export async function detectFormSurge(
   return null;
 }
 
+export async function detectCleanSheetStreak(
+  supabase: GenericClient,
+  teamId: string,
+  opts: { min_streak_length?: number; max_matches?: number } = {}
+): Promise<DetectionResult | null> {
+  const min_streak_length = opts.min_streak_length ?? 3;
+  const max_matches = opts.max_matches ?? 10;
+  const matches = await getRecentMatches(supabase, teamId, max_matches);
+  if (matches.length < min_streak_length) return null;
+
+  let streak = 0;
+  for (const m of matches) {
+    const ga = goalsAgainstTeam(m, teamId);
+    if (ga === 0) streak += 1; else break;
+  }
+
+  if (streak >= min_streak_length) {
+    const confidence = Math.min(95, 70 + streak * 5);
+    const strength = Math.min(100, streak * 25);
+    return {
+      pattern_type: "clean_sheet_streak",
+      pattern_name: "Clean Sheet Streak",
+      confidence,
+      strength,
+      prediction_impact: 4,
+      metadata: { streak_length: streak, min_streak: min_streak_length, sample_size: matches.length },
+    };
+  }
+  return null;
+}
+
+export async function detectBTTSStreak(
+  supabase: GenericClient,
+  teamId: string,
+  opts: { min_streak_length?: number; max_matches?: number } = {}
+): Promise<DetectionResult | null> {
+  const min_streak_length = opts.min_streak_length ?? 3;
+  const max_matches = opts.max_matches ?? 10;
+  const matches = await getRecentMatches(supabase, teamId, max_matches);
+  if (matches.length < min_streak_length) return null;
+
+  let streak = 0;
+  for (const m of matches) {
+    const gf = goalsForTeam(m, teamId);
+    const ga = goalsAgainstTeam(m, teamId);
+    if (gf > 0 && ga > 0) streak += 1; else break;
+  }
+
+  if (streak >= min_streak_length) {
+    const confidence = Math.min(90, 65 + streak * 6);
+    const strength = Math.min(100, streak * 22);
+    return {
+      pattern_type: "btts_streak",
+      pattern_name: "Both Teams To Score Streak",
+      confidence,
+      strength,
+      prediction_impact: 3,
+      metadata: { streak_length: streak, min_streak: min_streak_length, sample_size: matches.length },
+    };
+  }
+  return null;
+}
+
 export type DetectionFunctionKey = "winning_streak" | "home_dominance" | "high_scoring_trend" | "form_surge";
 
 export async function runDetections(
