@@ -7,6 +7,8 @@ import StatCard from "@/components/StatCard";
 import { CSSBadge } from "@/components/CSSBadge";
 import { NarrativeSection } from "@/components/NarrativeSection";
 import TeamPatternsSection from "@/components/patterns/TeamPatternsSection";
+import { StreakAnalysis } from "@/components/analysis/StreakAnalysis";
+import { TransitionMatrixHeatmap } from "@/components/analysis/TransitionMatrixHeatmap";
 import { getMatchHistory } from "@/data/matchHistory";
 import { 
   generateTeamStatistics, 
@@ -407,6 +409,8 @@ const TeamDetail = () => {
             {/* Detailed Stats */}
             <div className="lg:col-span-2 space-y-6">
               <TeamPatternsSection teamName={teamName || ""} />
+              <StreakAnalysis teamName={teamName || ""} />
+              <TransitionMatrixHeatmap teamName={teamName || ""} />
               {/* Basic Match Statistics */}
               <StatCard
                 title="Alapvető Mérkőzésstatisztikák"
