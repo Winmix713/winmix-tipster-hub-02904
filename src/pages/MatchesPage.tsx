@@ -230,6 +230,10 @@ export default function MatchesPage() {
     match_date: "",
     venue: "",
     status: "scheduled",
+    home_score: null,
+    away_score: null,
+    halftime_home_score: null,
+    halftime_away_score: null,
   });
 
   const resetForm = () => {
@@ -240,6 +244,10 @@ export default function MatchesPage() {
       match_date: "",
       venue: "",
       status: "scheduled",
+      home_score: null,
+      away_score: null,
+      halftime_home_score: null,
+      halftime_away_score: null,
     });
   };
 
@@ -252,6 +260,10 @@ export default function MatchesPage() {
       match_date: match.match_date,
       venue: match.venue || "",
       status: match.status,
+      home_score: match.home_score ?? null,
+      away_score: match.away_score ?? null,
+      halftime_home_score: match.halftime_home_score ?? null,
+      halftime_away_score: match.halftime_away_score ?? null,
     });
     setIsEditDialogOpen(true);
   };
@@ -284,8 +296,8 @@ export default function MatchesPage() {
       match.match_date,
       match.venue || "",
       match.status,
-      match.home_score || "",
-      match.away_score || "",
+      match.home_score ?? "",
+      match.away_score ?? "",
     ]);
     
     const csvContent = [headers, ...rows]
@@ -299,6 +311,75 @@ export default function MatchesPage() {
     a.download = 'matches.csv';
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportToJSON = () => {
+    const matches = matchesQuery.data || [];
+    const cleaned = matches.map((m) => ({
+      id: m.id,
+      league_id: m.league_id,
+      home_team_id: m.home_team_id,
+      away_team_id: m.away_team_id,
+      match_date: m.match_date,
+      venue: m.venue,
+      status: m.status,
+      home_score: m.home_score ?? null,
+      away_score: m.away_score ?? null,
+      halftime_home_score: m.halftime_home_score ?? null,
+      halftime_away_score: m.halftime_away_score ?? null,
+    }));
+    const blob = new Blob([JSON.stringify(cleaned, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'matches.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const formErrors = useMemo(() => {
+    const errors: string[] = [];
+    if (!formData.league_id) errors.push("League is required");
+    if (!formData.home_team_id) errors.push("Home team is required");
+    if (!formData.away_team_id) errors.push("Away team is required");
+    if (formData.home_team_id && formData.away_team_id && formData.home_team_id === formData.away_team_id) {
+      errors.push("Home and away teams must be different");
+    }
+    if (!formData.match_date || isNaN(new Date(formData.match_date).getTime())) {
+      errors.push("Valid match date is required");
+    }
+    const isCompleted = formData.status === 'completed' || formData.status === 'finished';
+    const hs = formData.home_score;
+    const as = formData.away_score;
+    if (isCompleted) {
+      if (hs === null || as === null || Number.isNaN(hs as number) || Number.isNaN(as as number)) {
+        errors.push("Completed matches must include both scores");
+      }
+    }
+    if (hs !== null && hs < 0) errors.push("Home score cannot be negative");
+    if (as !== null && as < 0) errors.push("Away score cannot be negative");
+    if (formData.halftime_home_score !== null && hs !== null && formData.halftime_home_score > hs) {
+      errors.push("Halftime home score cannot exceed final home score");
+    }
+    if (formData.halftime_away_score !== null && as !== null && formData.halftime_away_score > as) {
+      errors.push("Halftime away score cannot exceed final away score");
+    }
+    return errors;
+  }, [formData]);
+
+  const buildPayload = (): MatchFormData => {
+    return {
+      league_id: formData.league_id,
+      home_team_id: formData.home_team_id,
+      away_team_id: formData.away_team_id,
+      match_date: formData.match_date,
+      venue: formData.venue,
+      status: formData.status,
+      home_score: formData.home_score ?? null,
+      away_score: formData.away_score ?? null,
+      halftime_home_score: formData.halftime_home_score ?? null,
+      halftime_away_score: formData.halftime_away_score ?? null,
+    };
   };
 
   const filteredMatches = useMemo(() => {
@@ -349,6 +430,10 @@ export default function MatchesPage() {
               <Button variant="outline" onClick={exportToCSV}>
                 <Download className="w-4 h-4 mr-2" />
                 Export CSV
+              </Button>
+              <Button variant="outline" onClick={exportToJSON}>
+                <Download className="w-4 h-4 mr-2" />
+                Export JSON
               </Button>
               <Button variant="outline" onClick={() => setIsImportDialogOpen(true)}>
                 <Upload className="w-4 h-4 mr-2" />
@@ -485,14 +570,79 @@ export default function MatchesPage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="home-score">Home Score</Label>
+                  <Input
+                    id="home-score"
+                    type="number"
+                    min={0}
+                    value={formData.home_score ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData((prev) => ({ ...prev, home_score: val === "" ? null : Number.parseInt(val, 10) }));
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="away-score">Away Score</Label>
+                  <Input
+                    id="away-score"
+                    type="number"
+                    min={0}
+                    value={formData.away_score ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData((prev) => ({ ...prev, away_score: val === "" ? null : Number.parseInt(val, 10) }));
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="ht-home-score">HT Home Score</Label>
+                  <Input
+                    id="ht-home-score"
+                    type="number"
+                    min={0}
+                    value={formData.halftime_home_score ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData((prev) => ({ ...prev, halftime_home_score: val === "" ? null : Number.parseInt(val, 10) }));
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="ht-away-score">HT Away Score</Label>
+                  <Input
+                    id="ht-away-score"
+                    type="number"
+                    min={0}
+                    value={formData.halftime_away_score ?? ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData((prev) => ({ ...prev, halftime_away_score: val === "" ? null : Number.parseInt(val, 10) }));
+                    }}
+                  />
+                </div>
+              </div>
+              {formErrors.length > 0 && (
+                <Alert variant="destructive">
+                  <AlertDescription>
+                    {formErrors.map((err, idx) => (
+                      <div key={idx}>{err}</div>
+                    ))}
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
               <Button 
-                onClick={() => createMutation.mutate(formData)}
-                disabled={createMutation.isPending || !formData.league_id || !formData.home_team_id || !formData.away_team_id || !formData.match_date}
+                onClick={() => createMutation.mutate(buildPayload())}
+                disabled={createMutation.isPending || !formData.league_id || !formData.home_team_id || !formData.away_team_id || !formData.match_date || formErrors.length > 0}
               >
                 Create
               </Button>
@@ -760,6 +910,71 @@ export default function MatchesPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="edit-home-score">Home Score</Label>
+                      <Input
+                        id="edit-home-score"
+                        type="number"
+                        min={0}
+                        value={formData.home_score ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData((prev) => ({ ...prev, home_score: val === "" ? null : Number.parseInt(val, 10) }));
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-away-score">Away Score</Label>
+                      <Input
+                        id="edit-away-score"
+                        type="number"
+                        min={0}
+                        value={formData.away_score ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData((prev) => ({ ...prev, away_score: val === "" ? null : Number.parseInt(val, 10) }));
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="edit-ht-home-score">HT Home Score</Label>
+                      <Input
+                        id="edit-ht-home-score"
+                        type="number"
+                        min={0}
+                        value={formData.halftime_home_score ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData((prev) => ({ ...prev, halftime_home_score: val === "" ? null : Number.parseInt(val, 10) }));
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-ht-away-score">HT Away Score</Label>
+                      <Input
+                        id="edit-ht-away-score"
+                        type="number"
+                        min={0}
+                        value={formData.halftime_away_score ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData((prev) => ({ ...prev, halftime_away_score: val === "" ? null : Number.parseInt(val, 10) }));
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {formErrors.length > 0 && (
+                    <Alert variant="destructive">
+                      <AlertDescription>
+                        {formErrors.map((err, idx) => (
+                          <div key={idx}>{err}</div>
+                        ))}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
@@ -768,9 +983,9 @@ export default function MatchesPage() {
                   <Button 
                     onClick={() => selectedMatch && updateMutation.mutate({ 
                       id: selectedMatch.id, 
-                      data: formData 
+                      data: buildPayload() 
                     })}
-                    disabled={updateMutation.isPending || !formData.league_id || !formData.home_team_id || !formData.away_team_id || !formData.match_date}
+                    disabled={updateMutation.isPending || !formData.league_id || !formData.home_team_id || !formData.away_team_id || !formData.match_date || formErrors.length > 0}
                   >
                     Update
                   </Button>

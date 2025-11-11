@@ -54,6 +54,13 @@ export const NAV_SECTIONS: Array<{
         roles: ["admin", "analyst"],
       },
       {
+        label: "Stats & Data Quality",
+        description: "Distributions, scorelines, data checks",
+        href: "/admin/stats",
+        icon: Database,
+        roles: ["admin", "analyst"],
+      },
+      {
         label: "Integrations",
         description: "GitHub, Linear, Slack, Sentry, etc.",
         href: "/admin/integrations",

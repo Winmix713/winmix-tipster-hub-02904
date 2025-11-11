@@ -112,6 +112,10 @@ export interface MatchFormData {
   match_date: string;
   venue?: string;
   status?: 'scheduled' | 'live' | 'completed' | 'cancelled';
+  home_score?: number | null;
+  away_score?: number | null;
+  halftime_home_score?: number | null;
+  halftime_away_score?: number | null;
 }
 
 export interface CSVImportResult {
