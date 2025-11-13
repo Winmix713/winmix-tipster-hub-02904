@@ -29,6 +29,7 @@ const MatchDetail = React.lazy(() => import('@/pages/MatchDetail'));
 const ScheduledJobsPage = React.lazy(() => import('@/pages/ScheduledJobsPage'));
 const ModelsPage = React.lazy(() => import('@/pages/ModelsPage'));
 const MonitoringPage = React.lazy(() => import('@/pages/MonitoringPage'));
+const SoccerChampionship = React.lazy(() => import('@/pages/SoccerChampionship'));
 
 // Lazy load admin components
 const AdminDashboard = React.lazy(() => import('@/pages/admin/AdminDashboard'));
@@ -52,6 +53,16 @@ const AppRoutes: React.FC = () => {
       <Route path="/login" element={<AuthGate requireAuth={false}><Login /></AuthGate>} />
       <Route path="/signup" element={<AuthGate requireAuth={false}><Signup /></AuthGate>} />
       <Route path="/feature-flags" element={<AuthGate requireAuth={false}><FeatureFlagsDemo /></AuthGate>} />
+      <Route 
+        path="/championship"
+        element={
+          <AuthGate requireAuth={false}>
+            <Suspense fallback={<PageLoading message="Loading championship..." />}>
+              <SoccerChampionship />
+            </Suspense>
+          </AuthGate>
+        }
+      />
       
       {/* Demo routes - accessible to all (read-only for unauthenticated) */}
       <Route path="/predictions" element={<AuthGate requireAuth={false}><PredictionsView /></AuthGate>} />
