@@ -101,6 +101,7 @@ supabase/functions/   # Edge Functions powering jobs and analytics orchestration
 - [WinMix_TipsterHub_Phase_3-9_Components_EN.md](docs/WinMix_TipsterHub_Phase_3-9_Components_EN.md) – deep dive into components per phase.
 - [PHASE9_IMPLEMENTATION.md](docs/PHASE9_IMPLEMENTATION.md) – architectural notes on the advanced collaborative intelligence layer.
 - [PAGES_OLDALAK_BEMUTATASA_HU.md](docs/PAGES_OLDALAK_BEMUTATASA_HU.md) – src/pages oldalak rövid bemutatása (HU).
+- [WINMIX_AURA_DESIGN_PROMPT_HU.md](docs/WINMIX_AURA_DESIGN_PROMPT_HU.md) – Aura-ready dark UI design system prompt (HU).
 
 ### Reviews & Roadmaps
 - **[🧭 Projekt állapotértékelés és roadmap (HU)](docs/PROJEKT_ERTEKELES_ES_ROADMAP_HU.md)** – Reális értékelés a teljes repo alapján, fókusz: Streak Analysis és Transition Matrix
